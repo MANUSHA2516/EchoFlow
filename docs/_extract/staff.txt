@@ -1,0 +1,243 @@
+                     ECO Unit Queue Management System
+                                             Staff Web Portal
+                    UI Screens — Actor, Purpose, Functions and Requirement Mapping
+
+This document catalogues every implemented screen of the Staff Web Portal for the ECO (Echocardiography)
+unit queue-management system described in the accompanying research proposal (General Hospital, Sri Lanka).
+For each screen it identifies the primary actor (user role), the screen’s purpose, its key functional elements, and
+how it maps to the functional requirements (FR1–FR12, Table 3.1) and operational problems identified in
+Chapter 1 of the proposal.
+
+Primary actor for this portal: Staff — front-desk/registration clerks, nursing staff, and the medical
+officers/technicians performing echocardiograms in the ECO unit.
+Screens documented: 11 (Staff Sign In, Forgot/Reset Password, Today’s Overview, Queue Management, Queue
+Prediction, Patient Search, Patient Detail, Reports, Register New Patient modal, My Profile, Edit Profile).
+Screen 1. Staff Sign In
+
+
+
+
+Actor: Staff (front-desk/registration staff, nurses, ECHO unit technicians, and medical officers) — any authorised
+ECO unit staff member
+Purpose
+This is the entry point of the Staff Web Portal. It authenticates hospital staff before granting access to any
+patient data, queue controls, or reporting tools, so that the system is used only by verified ECO unit personnel.
+Key functions / elements
+ • Staff ID and password fields, with a show/hide toggle on the password field
+ • “Keep me signed in” checkbox for trusted devices
+ • “Forgot password?” link that opens the password-reset flow (Screen 2)
+ • Primary “Sign in” action button plus an alternative “Sign in with hospital SSO” option
+ • A visible security notice (“Access is logged and restricted to authorised staff”) reinforcing accountability
+ • A branded panel summarising what the portal offers (live queue control, patient intake records, scan
+     scheduling) together with live-style indicator cards (staff accounts, patients in queue, uptime)
+Relation to requirements / research proposal
+Supports the non-functional security and data-privacy requirements described in the methodology (Section
+3.10): access to patient data must be restricted and every sign-in/reset event is logged for audit purposes,
+feeding into the Audit Log maintained on the Administrator Web Portal. It is the gatekeeper for every functional
+requirement (FR1–FR12) that follows, since none of the staff-side features can be reached without
+authentication.
+Screen 2. Forgot Password / Reset Password
+
+
+
+
+Actor: Staff (any registered user who has lost access to their account)
+Purpose
+Provides a self-service account-recovery path so that a staff member who cannot sign in is not permanently
+locked out, while keeping the recovery process secure and auditable.
+Key functions / elements
+ • Explanatory panel describing that resets are only ever sent to the verified email on file for the entered Staff
+     ID
+ • Staff ID input field to identify the account requiring recovery
+ • Inline notice that the reset link is single-use and expires after 15 minutes
+ • “Send reset link” primary action and a “Back to sign in” link to return to Screen 1
+ • A footer notice confirming that password resets are logged for audit and security review
+Relation to requirements / research proposal
+Directly implements the security and account-governance safeguards discussed in Section 3.10 (Ethical
+Considerations) of the proposal, where role-based access, session control, and audit logging are identified as
+required controls for any system handling patient-adjacent data under Sri Lanka’s Personal Data Protection Act,
+No. 9 of 2022.
+
+
+Screen 3. Today’s Overview (Dashboard)
+Actor: Staff (front-desk/registration staff and ECHO unit technicians) — landing screen after login
+Purpose
+Gives staff an at-a-glance operational snapshot of the ECO unit the moment they log in, so they can start their
+shift with situational awareness instead of walking in blind, directly answering the “lack of real-time monitoring”
+problem identified in Chapter 1.
+Key functions / elements
+ • Four key-performance-indicator cards: patients currently In queue, patients Served today (with day-on-
+     day % change), Avg wait (against a target), and the ML-predicted Peak window for the day
+ • “Predicted patient inflow (next 6 hrs)” bar chart showing hourly expected patient volume, with the
+     current/peak hour highlighted
+ • Quick-action buttons: “Go to queue management” and “View prediction detail”, linking directly into Screens
+     4 and 5
+ • Persistent left-hand navigation (Dashboard, Queue management, Patients, Prediction, Reports) and a
+     header with date/time, notifications, and the signed-in staff avatar
+Relation to requirements / research proposal
+Corresponds to the “Today’s Overview dashboard with key-performance-indicator cards and a patient-volume
+chart” listed as a core Staff Web Portal screen in the Scope of the Study (Section 1.5), and is fed by the same ML
+Prediction Service (Figure 3.2) that powers the Queue Prediction screen.
+
+
+Screen 4. Queue Management
+Actor: Staff (front-desk staff and ECHO unit technicians operating the live queue)
+Purpose
+The core operational control surface of the portal: it lets staff run the live ECO queue in real time — calling
+patients, skipping them, marking scans complete, and pulling urgent cases forward — replacing the informal,
+memory-based ordering used in the manual process.
+Key functions / elements
+ • Summary strip: Avg time/patient, Longest wait, and Served today
+ • A visual visit-stage tracker (Checked in → Now serving → Scanning → Complete) showing where the current
+     ticket sits
+ • “Now serving” live card showing the active ticket number, patient name, scan type, priority, and elapsed
+     time, with Skip and Mark done actions
+ • A “Waiting – N patients” list showing each queued ticket with its scan type, priority tag, and estimated wait;
+     an URGENT patient is visually flagged in red with a one-tap “Call next” action that jumps them ahead of the
+     queue
+ • “+ Add walk-in” button in the header to register an unscheduled patient directly into the live queue
+Relation to requirements / research proposal
+Implements FR3 (“Allow staff to call, skip, or complete tickets and manage the live queue”) and FR4
+(“Automatically flag and prioritise urgent/critical patients”) from Table 3.1, and is the staff-side counterpart of
+the patient-facing Live Queue Tracking screen — an action taken here (e.g. Mark done) is reflected in real time
+on the patient’s mobile app, per the shared REST API architecture in Figure 3.2. It is the design response to the
+“no formal queue-numbering system” and “difficulty prioritising urgent cases” problems identified in Chapter 1.
+
+
+Screen 5. Queue Prediction
+Actor: Staff (ECHO unit technicians and shift-planning staff)
+Purpose
+Surfaces the machine-learning forecasting engine described in the methodology (Section 3.8) directly to staff,
+turning historical and live queue data into a forward-looking view of expected demand so that staffing and
+pacing decisions can be made proactively rather than reactively.
+Key functions / elements
+ • Live model status badge (engine version, last-trained time, live indicator)
+ • AI Insight banner giving a plain-language recommendation (e.g. inflow trending above average, suggesting
+     an extra technician) with a “View reasoning” link
+ • KPI cards: patients Expected today, Model confidence, and Next hour forecast
+ • “Hourly forecast – next 12 hrs” bar chart comparing Actual vs Forecast patient counts per hour, with the
+     busiest/peak hour highlighted
+ • “What’s driving this forecast” feature-importance panel (day of week, time of day, historical load, local
+     events/holidays) for interpretability
+ • Model info panel (version, last trained, 7-day accuracy trend, next scheduled retrain) and an automatic
+     retraining-schedule note
+Relation to requirements / research proposal
+Implements FR5 (“Predict expected patient influx, peak hours, and average wait time using historical/live data”)
+and is the direct interface for the Random Forest/XGBoost prediction pipeline described in Section 3.8. The
+feature-importance panel operationalises the interpretability requirement identified from the literature (ref.
+[14] in Chapter 2), so that staff and administrators can trust and act on the model’s output rather than treating it
+as a black box.
+
+
+Screen 6. Patient Search
+Actor: Staff (front-desk/registration staff)
+Purpose
+Digitises patient look-up and registration, replacing the paper-based patient register that is slow to search,
+prone to loss/damage, and vulnerable to duplicate entries.
+Key functions / elements
+ • Summary cards: Total patients, New this week, Follow-ups due
+ • Search bar to find a patient by NIC number or name
+ • Filter chips: All, Recent visits, Follow-up due, High priority, plus a “Show: All patients” dropdown
+ • “+ New patient” button that opens the Register New Patient modal (Screen 9)
+ • A results list showing each patient’s avatar/initials, name, NIC, a colour-coded visit-type tag (e.g. ECHO scan,
+     Follow-up, Referral), last-visit date, and an “Open record” button leading to the Patient Detail screen
+     (Screen 7)
+Relation to requirements / research proposal
+Implements the search/registration half of FR6 (“Allow staff to search, view, and register patient records, and
+add new patients to the queue”) and directly targets the “manual patient registration” problem from Chapter 1
+(records that are time-consuming to search, prone to loss, and vulnerable to duplication).
+
+
+Screen 7. Patient Detail
+Actor: Staff (medical officers/technicians documenting a visit, and front-desk staff reviewing history)
+Purpose
+Gives staff a full clinical/visit history for a single patient and a place to record the outcome of today’s visit, so
+patient information persists digitally instead of being scattered across paper files.
+Key functions / elements
+ • Patient header: avatar/initials, name, NIC, age, total-visits badge, and a status tag (e.g. Stable – low risk)
+ • “Past visits” timeline listing each prior visit with its date, type, a short clinical summary, and a status badge
+     (e.g. Normal, Review due)
+ • “Add today’s consultation note” field for findings/diagnosis/follow-up plan, with a “Save note” action that
+     auto-saves to the patient’s record
+ • Breadcrumb navigation back to the Patient Search list
+Relation to requirements / research proposal
+Implements the record-viewing half of FR6 and operationalises the shift “from paper-based reporting and
+absence of historical analysis” toward a searchable digital history, directly supporting continuity of care for
+repeat ECO patients.
+
+
+Screen 8. Reports
+Actor: Staff (shift leads / ECHO unit technicians compiling operational reports)
+Purpose
+Replaces manual, paper-compiled monthly/weekly performance reporting with an on-demand, exportable
+operational reporting screen, enabling evidence-based rather than reactive planning.
+Key functions / elements
+ • Period selector (e.g. “This week”)
+ • AI Summary banner highlighting a notable trend (e.g. volume up 12% on last week, driven by specific days)
+     with a “View trends” link
+ • KPI cards: Total patients (with week-on-week change), Avg wait time (with improvement indicator), and live
+     Prediction accuracy
+ • “Patients served per day” bar chart (Mon–Fri) with the busiest day highlighted and an average reference
+     line
+ • “Export as CSV” and “Export full report (PDF)” actions
+Relation to requirements / research proposal
+Implements FR7 (“Generate operational performance reports over a selectable period”) on the staff side
+(mirrored by the Administrator Portal’s own Reports & Insights screen), and responds to the “paper-based
+reporting and absence of historical analysis” problem identified in Chapter 1.
+
+
+Screen 9. Register New Patient (modal)
+Actor: Staff (front-desk/registration staff)
+Purpose
+A focused overlay form for adding a walk-in or newly referred patient straight into today’s queue, described in
+its own subtitle as digitising “the manual sign-in book.”
+Key functions / elements
+ • Fields: Full name, NIC number, Phone, Date of birth
+ • “Reason for visit” dropdown (e.g. Routine ECHO scan)
+ • Priority selector toggle: Normal or Urgent
+ • “Cancel” and “Save and add to queue” actions — saving both creates the patient record and issues a live
+     queue ticket in one step
+Relation to requirements / research proposal
+Implements FR1 (“Allow a patient to digitally join a queue… and receive a ticket”, here performed on the
+patient’s behalf by staff) and the registration half of FR6, and is reachable both from the Patient Search screen
+(“+ New patient”) and the Queue Management screen (“+ Add walk-in”). It is the clearest single-screen answer
+to the “manual patient registration” and “no formal queue-numbering system” problems in Chapter 1.
+
+
+Screen 10. My Profile
+Actor: Staff (the individual signed-in staff member, e.g. an ECHO Unit Technician)
+Purpose
+Gives a staff member visibility into their own shift performance and recent actions within the system, and is the
+entry point for managing their personal account.
+Key functions / elements
+ • Profile header: avatar/initials, name, role, hospital, Staff ID badge, and on-shift status, with an “Edit profile”
+     button linking to Screen 11
+ • Personal KPI cards: Patients served today, Avg time/patient, and Shift hours today
+ • “Recent activity” feed — a chronological, self-scoped log of the staff member’s own actions (e.g. marked a
+     ticket done, called an urgent patient, added a walk-in, updated a consultation note, checked in for shift)
+ • “Today’s shift” progress bar showing shift start/end time, check-in time, and time remaining
+ • “Patients served this week” mini bar chart
+ • “Change password” and “Notification settings” shortcuts
+Relation to requirements / research proposal
+A supporting account-management screen that complements the Audit Log and role-based access controls
+discussed in Section 3.10: the personal “Recent activity” feed gives each staff member the same kind of user-
+attributed action history that, at unit level, feeds into the Administrator Portal’s Audit Log.
+
+
+Screen 11. Edit Profile
+Actor: Staff (the individual signed-in staff member)
+Purpose
+Lets a staff member update their own personal contact details while keeping administratively controlled fields
+locked, enforcing the role-based governance model described in the methodology.
+Key functions / elements
+ • Profile photo upload with “Remove” and “Upload new” actions
+ • Editable personal information: Full name, Phone, Email address, Date of birth
+ • Read-only “Work details” block: Staff ID, Role, and Department, explicitly labelled as “managed by hospital
+     admin and can’t be edited here”
+ • “Cancel” and “Save changes” actions, with a “Last updated” timestamp
+Relation to requirements / research proposal
+Reinforces the security/permission model described in Section 3.10: identity- and role-defining fields (Staff ID,
+Role, Department) can only be changed through the Administrator Web Portal’s Staff Accounts screen, while
+staff retain self-service control only over their own contact details — a deliberate separation of concerns
+between individual users and system administrators.
+

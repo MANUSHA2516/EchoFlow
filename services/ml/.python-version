@@ -1,0 +1,2 @@
+# Prefer Python 3.12 for local ML development.
+python_requires = ">=3.11,<3.14"

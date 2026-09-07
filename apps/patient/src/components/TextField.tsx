@@ -1,0 +1,89 @@
+import { ReactNode } from 'react';
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  TextInputProps,
+  View,
+} from 'react-native';
+import { colors } from '../theme/colors';
+import { radii, spacing } from '../theme/spacing';
+
+type Props = TextInputProps & {
+  label: string;
+  icon?: ReactNode;
+  right?: ReactNode;
+  prefix?: string;
+  locked?: boolean;
+};
+
+export function TextField({
+  label,
+  icon,
+  right,
+  prefix,
+  locked,
+  style,
+  ...rest
+}: Props) {
+  return (
+    <View style={styles.wrap}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={[styles.field, locked && styles.locked]}>
+        {icon ? <View style={styles.icon}>{icon}</View> : null}
+        {prefix ? <Text style={styles.prefix}>{prefix}</Text> : null}
+        <TextInput
+          placeholderTextColor={colors.slateSoft}
+          editable={!locked && rest.editable !== false}
+          style={[styles.input, style]}
+          {...rest}
+        />
+        {right ? <View style={styles.right}>{right}</View> : null}
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  wrap: {
+    gap: spacing.sm,
+  },
+  label: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    color: colors.slate,
+    textTransform: 'uppercase',
+  },
+  field: {
+    minHeight: 52,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    paddingHorizontal: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  locked: {
+    backgroundColor: '#F1F5F9',
+  },
+  icon: {
+    opacity: 0.85,
+  },
+  prefix: {
+    color: colors.navy,
+    fontWeight: '700',
+    fontSize: 15,
+  },
+  input: {
+    flex: 1,
+    color: colors.navy,
+    fontSize: 15,
+    paddingVertical: spacing.md,
+  },
+  right: {
+    marginLeft: spacing.xs,
+  },
+});

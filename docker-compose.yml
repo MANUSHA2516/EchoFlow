@@ -1,0 +1,46 @@
+services:
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - echoflow_mongo:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/echoflow
+      API_PORT: 4000
+      JWT_ACCESS_SECRET: change-me-access-secret-min-32-chars!!
+      JWT_REFRESH_SECRET: change-me-refresh-secret-min-32-chars!
+      ML_SERVICE_URL: http://ml:8000
+      CORS_ORIGINS: http://localhost:3000,http://localhost:3001,http://localhost:3002
+    depends_on:
+      mongo:
+        condition: service_healthy
+      ml:
+        condition: service_started
+
+  ml:
+    build:
+      context: ./services/ml
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      ML_MODEL_DIR: /app/artifacts
+      ML_DATA_PROVENANCE: synthetic
+    volumes:
+      - ./services/ml/artifacts:/app/artifacts
+
+volumes:
+  echoflow_mongo:

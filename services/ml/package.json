@@ -1,0 +1,13 @@
+{
+  "name": "@echoflow/ml",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+    "start": "uvicorn app.main:app --host 0.0.0.0 --port 8000",
+    "lint": "python -m compileall app scripts || true",
+    "typecheck": "python -m compileall app",
+    "test": "python -c \"print('ml tests deferred to Phase 9/13')\"",
+    "build": "python -m compileall app"
+  }
+}

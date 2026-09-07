@@ -1,0 +1,438 @@
+   GENERAL HOSPITAL — ECHOCARDIOGRAPHY (ECO) UNIT
+   Intelligent Patient Queue Management and Prediction System
+
+
+PATIENT (USER) MOBILE APPLICATION
+  Screen-by-Screen Interface & Functional Description
+
+
+  Primary Actor: Patient / End-User of the ECO Unit Patient Portal
+     Interface: Patient Mobile Application • 14 implemented screens
+     Companion reference document to the system research proposal / thesis
+1. Overview
+The system proposed in the accompanying research is designed around three coordinated interfaces — a
+Patient (User) Mobile Application, a Staff Web Portal, and an Administrator Web Portal — built to manage
+patient flow and predict queue behaviour in the Echocardiography (ECO) unit of a Sri Lankan public hospital.
+This document focuses exclusively on the Patient Mobile Application, the patient-facing side of that system,
+and provides a detailed, screen-by-screen description of its user interface and functionality.
+The Patient Mobile Application is used by a single actor — the Patient (also referred to as the End-User or
+Registered Patient) — across every screen described below. It is designed to replace manual, paper-based
+registration and queue handling with self-service digital registration, machine-learning-based wait-time
+prediction, live position tracking, and GPS/QR-verified on-site priority handling. Fourteen implemented screens
+are covered: five relate to secure account access, three relate to profile and security management, five form
+the core queue journey, and one manages on-site priority verification.
+Each entry below states the screen’s purpose, its key interface elements exactly as implemented in the design,
+how it functions within the wider system, and the research objective or literature theme it corresponds to in
+the study.
+
+1.1 Screen Index
+   #     Screen Name                             Module / Category
+   1     Secure Login                            Authentication / Access Module
+   2     New Patient Registration                Authentication / Access Module
+   3     Verify OTP                              Authentication / Access Module
+   4     Verification Successful                 Authentication / Access Module
+   5     Update Phone Number                     Profile & Security Module
+   6     Home Dashboard                          Core Patient Journey
+   7     Join Today’s Queue                      Core Patient Journey
+   8     Live Ticket (“Your Number”)             Core Patient Journey
+   9     Live Queue Tracking                     Core Patient Journey
+  10     Visit History                           Core Patient Journey
+  11     Profile                                 Profile & Security Module
+  12     Edit Profile                            Profile & Security Module
+  13     Check-in QR                             Priority & Verification Module
+  14     Notifications                           Core Patient Journey
+2. Screen-by-Screen Descriptions
+
+Screen 1 | Secure Login
+
+
+
+
+Actor: Registered Patient (returning user)
+Module / Category: Authentication / Access Module
+Purpose
+The entry-point screen of the Patient Mobile Application. It allows an already-registered ECO-unit patient to
+securely sign in to the portal using their National Identity Card (NIC) number and registered mobile number,
+instead of a conventional username/password pair.
+Key Interface Elements
+    ●     Status badge “SECURE LOGIN” and unit label “ECHOCARDIOGRAPHY UNIT”
+    ●     Hospital brand mark (heart-rate/pulse icon), “General Hospital” title and “ECHO Unit · Patient Portal”
+          subtitle
+    ●     Animated ECG waveform graphic reinforcing the cardiology/ECO context
+    ●     “Log in / Register” segmented tab control (Log in selected)
+    ●     NIC Number input field with ID-card icon
+    ●     Phone Number input field, pre-formatted for Sri Lankan mobile numbers (+94)
+    ●     Gradient “Continue” call-to-action button
+    ●     “New patient? Register with your NIC in one step” shortcut link
+    ●     Footer legend (HR / SpO2 / Verified) and a language selector (EN)
+Functionality & System Behaviour
+On submission, the entered NIC and phone number are validated against the patient record; a successful
+match triggers an SMS one-time-password sent to the registered number and routes the patient to the Verify
+OTP screen. This NIC-based login removes the need to remember a separate password, reduces duplicate
+patient records, and directly supports the study’s objective of replacing manual, paper-based registration at
+the ECO unit with a secure digital entry point.
+Research Link
+Supports Research Objective 2 (digital registration module) and addresses research gap G1 identified in Chapter
+2 of the study.
+
+
+Screen 2 | New Patient Registration
+
+
+
+
+Actor: First-time / walk-in Patient
+Module / Category: Authentication / Access Module
+Purpose
+A self-service sign-up screen that lets a first-time patient create their ECO-unit portal account directly from
+their phone, without needing a staff member to manually enter their details at the counter.
+Key Interface Elements
+    ●     Status badge “NEW PATIENT” and unit label
+    ●     “Log in / Register” tab control (Register selected)
+    ●     Full Name input field
+    ●     NIC Number input field
+    ●     Phone Number input field (+94 format)
+    ●     Date of Birth input field (DD / MM / YYYY)
+    ●     Gradient “Create account →” button
+    ●     “Already registered? Log in with your NIC instead” link
+Functionality & System Behaviour
+Captures the minimum demographic data set (name, NIC, phone, date of birth) needed to create a unique
+patient record tied to the NIC number, preventing duplicate or misplaced records that are common under
+manual registration. Submitting the form triggers the same OTP verification flow (Screen 3) as login, confirming
+the patient controls the phone number before the account is activated.
+Research Link
+Directly operationalises Research Objective 2 — the digital patient-registration module — and reduces the
+administrative overhead identified in the Chapter 1 problem statement.
+
+
+Screen 3 | Verify OTP
+
+
+
+
+Actor: Patient (mid login or registration)
+Module / Category: Authentication / Access Module
+Purpose
+A two-factor security checkpoint that confirms the patient genuinely controls the mobile number they logged
+in or registered with, before the app grants access to any queue or personal data.
+Key Interface Elements
+    ●     Status badge “VERIFY OTP”, message-bubble icon
+    ●     “Verify your number” heading and “Code sent to +94 71 234 5678” confirmation text
+    ●     Six-digit segmented OTP input boxes
+    ●     “Didn’t get a code? Resend in 00:28” countdown / resend control
+    ●     Gradient “Verify & continue →” button
+    ●     “Wrong number? Edit phone number” escape link
+Functionality & System Behaviour
+Validates the time-limited one-time code sent by SMS. This protects patient accounts from unauthorised
+access and, because the verified number becomes the channel for all later alerts, guarantees that queue-
+position and check-in notifications (see Screen 14) reliably reach the correct patient.
+Research Link
+Security control underpinning Objectives 2 and 5; mirrors the SMS-based verification pattern reported in the
+local OPD-PMMAS and Doc990 literature reviewed in Chapter 2.
+
+
+Screen 4 | Verification Successful
+
+
+
+
+Actor: Patient
+Module / Category: Authentication / Access Module
+Purpose
+A short confirmation screen that closes the login/registration/OTP flow, reassuring the patient that their phone
+number has been verified and their account is ready to use.
+Key Interface Elements
+    ●     Status badge “VERIFIED” and checkmark icon
+    ●     “Verification successful” heading with “General Hospital · Echo Unit” subtitle
+    ●     Confirmation message: “Your phone number has been verified and your account is ready to use.”
+    ●     Gradient “Back to login →” button
+Functionality & System Behaviour
+Provides positive, unambiguous closure to the authentication sequence rather than silently redirecting the
+patient, which reduces confusion for first-time or less digitally confident users. The button returns the patient
+to the Secure Login screen (or forward into the Home Dashboard, depending on the entry flow) so they can
+proceed to use the queue features.
+Research Link
+Usability safeguard supporting the digital-literacy considerations discussed in Chapter 5 (Section 5.9) of the
+study.
+
+
+Screen 5 | Update Phone Number
+
+
+
+
+Actor: Patient
+Module / Category: Profile & Security Module
+Purpose
+A dedicated security screen that lets a patient change the mobile number linked to their account — for
+example after switching SIM cards — since that number is the primary channel for OTP login and live queue
+alerts.
+Key Interface Elements
+    ●     Status badge “EDIT DETAILS”, phone icon, “Update phone number” heading, “Patient Portal · Security”
+          subtitle
+    ●     Explanatory text: “We’ll text a one-time code to confirm any changes to this number.”
+    ●     Read-only “Current number” field
+    ●     Editable “New phone number” field
+    ●     Gradient “Send verification code →” button
+    ●     “Cancel and go back” link
+Functionality & System Behaviour
+Any change to the registered number must be re-confirmed by OTP before it takes effect, preventing an
+unauthorised party from silently hijacking the account and intercepting queue notifications. This screen is
+reached from the Profile screen’s “Edit details” action.
+Research Link
+Protects the reliability of the real-time notification channel used by Screens 6, 9 and 14.
+
+
+Screen 6 | Home Dashboard
+
+
+
+
+Actor: Patient (logged in)
+Module / Category: Core Patient Journey
+Purpose
+The patient’s central landing screen after login. It summarises the patient’s current ticket, the machine-
+learning-predicted wait time, and provides one-tap access to every other core action, so the patient never has
+to ask staff “how much longer?”
+Key Interface Elements
+    ●     Personalised gradient header “Hello, Kasun” with avatar initials (KP) and a notification bell showing an
+          unread indicator
+    ●     “Your queue number” card (e.g. A-014)
+    ●     ML-generated “Predicted wait” badge (e.g. 32 min) in an amber gradient card
+    ●     “LIVE · Currently serving” card showing the ticket currently being attended (A-009), “5 patients ahead
+          of you” and a dot-progress indicator (“of 14”)
+    ●     Primary gradient “Join today’s queue →” button
+    ●     Secondary “Visit history” and “Profile” quick-access buttons
+    ●     “At the hospital now?” priority callout explaining that on-site patients get priority in the queue, with a
+          “Show check-in QR” button
+    ●     Bottom navigation bar: Home / Queue / History / Profile
+Functionality & System Behaviour
+Surfaces the output of the system’s wait-time prediction model (Random Forest / XGBoost, Section 3.8 of the
+thesis) and the live queue position as an always-available, self-service data point on the patient’s own device,
+replacing tacit, staff-mediated updates. It is also the launch point for joining the queue and for the on-site QR
+check-in that unlocks priority handling.
+Research Link
+Central implementation of Research Objectives 2, 4 and 5 (registration, ML wait-time prediction and real-time
+status communication).
+
+
+Screen 7 | Join Today’s Queue
+
+
+
+
+Actor: Patient
+Module / Category: Core Patient Journey
+Purpose
+The digital ticket-request screen where a patient selects their reason for visiting and a preferred time slot,
+generating a live queue ticket without needing to visit the registration counter first — the digital replacement
+for the paper queue slip.
+Key Interface Elements
+    ●     Back navigation and “Join today’s queue” title
+    ●     “Reason for visit” dropdown selector (e.g. “Routine ECHO scan”)
+    ●     “Preferred time slot” chip selector (9–11 AM / 11–1 PM / 2–4 PM)
+    ●     “Notes for staff (optional)” free-text field for symptoms or referral details
+    ●     ML-driven “Estimated wait for this slot: 40 minutes” callout
+    ●     Gradient “Confirm and join queue” button
+    ●     Reassurance note: “You can leave the waiting room — we’ll track your place automatically.”
+Functionality & System Behaviour
+Submitting the form creates a new digital queue ticket and feeds the selected service type, time slot and notes
+into the queue-prediction pipeline, which returns an estimated wait time for that specific slot before the
+patient commits. This lets patients register and effectively “queue remotely” instead of waiting physically at
+the unit from the moment they arrive.
+Research Link
+Implements Research Objective 2 (automated queue-ticket generation) and the department/service selector
+referenced in the Chapter 5 discussion of the Patient Mobile Application.
+
+
+Screen 8 | Live Ticket (“Your Number”)
+
+
+
+
+Actor: Patient
+Module / Category: Core Patient Journey
+Purpose
+An immediate confirmation screen shown right after a ticket is issued, giving the patient their official queue
+number and a live snapshot of the queue.
+Key Interface Elements
+    ●     Gradient header card “Your number” with a “LIVE UPDATES” badge and the large assigned ticket
+          number (e.g. A-014)
+    ●     “Predicted: 32 min” badge
+    ●     “NOW SERVING” card with the currently-called ticket (A-009) and a visual progress bar
+    ●     “5 ahead of you” and “14 in queue total” counters
+    ●     “We’ll notify you — 3 patients before your turn” alert
+    ●     “Leave queue” (secondary) and “Live Queue” (primary) action buttons
+Functionality & System Behaviour
+Confirms that the ticket has been successfully created and re-states the ML-predicted wait time so the patient
+has an immediate expectation to plan around. The “Live Queue” button takes the patient to the full, staged
+Live Queue Tracking screen (Screen 9) for a more detailed view.
+Research Link
+Bridges Research Objectives 2 and 5, connecting ticket issuance to real-time tracking.
+
+
+Screen 9 | Live Queue Tracking
+
+
+
+
+Actor: Patient
+Module / Category: Core Patient Journey
+Purpose
+The most detailed real-time screen in the application: a colour-coded, stage-by-stage timeline that shows
+exactly where the patient sits in the queue, continuously refreshed by the prediction engine, and transparently
+explains why their position may have changed.
+Key Interface Elements
+    ●     “Live queue tracking” title with an “AI PREDICTING” status badge
+    ●     Queue-number card (e.g. A042) with a circular “People ahead” counter (11) and a “Your status: In
+          Queue” tag
+    ●     Amber “Your position moved back” alert explaining that another patient checked in on-site (QR
+          verified) and was given priority
+    ●     “Checked in on-site? Show your QR” shortcut button linking to Screen 13
+    ●     Vertical staged timeline of surrounding tickets, each with a colour-coded status icon: completed (green
+          check, e.g. A039), in progress (pulsing dot, e.g. A040, “~4 min ahead of you”), next up (staff icon, e.g.
+          A041, “~7 min”), and the patient’s own ticket highlighted as “YOU ARE HERE” (e.g. A042, “~11 min”)
+    ●     Bottom navigation bar
+Functionality & System Behaviour
+This screen is the direct interface implementation of the system’s priority-based queue-management logic: it
+does not just show a number, it visually explains that a legitimately prioritised on-site check-in can move a
+remote patient’s position back, so the patient understands the change instead of assuming an error. Position
+and wait estimates update live from the ML prediction service as tickets are called, served, or reprioritised by
+staff on the Queue Management screen of the Staff Portal.
+Research Link
+Core implementation of Research Objectives 3, 4 and 5 (priority-based queue management, ML wait-
+time/volume prediction, real-time tracking) and closes research gap G2 discussed in Chapter 5.
+
+
+Screen 10 | Visit History
+
+
+
+
+Actor: Patient
+Module / Category: Core Patient Journey
+Purpose
+Gives the patient self-service access to a record of their past attendances at the ECO unit, kept in one place
+instead of on paper slips or in staff-side files only.
+Key Interface Elements
+    ●     “ECHO UNIT RECORDS” badge, “Visit history” title and subtitle
+    ●     Summary stat cards: “3 Total visits”, “2 Completed”, “1 Archived”
+    ●     A list of visit cards, each with a coloured status stripe, an icon, the visit type (e.g. Routine ECHO scan,
+          Follow-up consultation, Doctor referral scan), the date and attending doctor, and a status pill
+          (Completed / Archived)
+    ●     “View all visits” link
+    ●     Bottom navigation bar
+Functionality & System Behaviour
+Lets the patient review when they last attended the unit, which doctor they saw, and the outcome status of
+each visit, supporting continuity of care and giving the patient a transparent, self-service alternative to asking
+reception for their attendance record.
+Research Link
+One of the five core patient screens defined in the study’s scope (Section 1.5).
+
+
+Screen 11 | Profile
+
+
+
+
+Actor: Patient
+Module / Category: Profile & Security Module
+Purpose
+A read-only account-summary screen showing the patient’s key personal and account details at a glance, and
+acting as the gateway to profile editing and logout.
+Key Interface Elements
+    ●   Gradient header card with avatar initials (KP), full name, NIC number and a “Verified” badge
+    ●   Quick-stat chips: Visits (3), Since (2026), Last ticket number (A-014)
+    ●   Detail rows for Phone, Date of birth and Address, each with an icon
+    ●   “Edit details” button
+    ●   “Log out” button (styled in a warning/red tone)
+    ●   Bottom navigation bar
+Functionality & System Behaviour
+Serves as the account hub: “Edit details” opens the Edit Profile screen (Screen 12) for updating personal
+information, while any phone-number change is routed through the dedicated Update Phone Number security
+flow (Screen 5) rather than being editable directly here, since the number also serves as the OTP and
+notification channel.
+Research Link
+Supports account transparency and trust, reinforcing the “Verified” identity status established during
+registration/login.
+
+
+Screen 12 | Edit Profile
+
+
+
+
+Actor: Patient
+Module / Category: Profile & Security Module
+Purpose
+An editable version of the Profile screen that lets the patient keep their personal details and profile photo up
+to date.
+Key Interface Elements
+    ●     Gradient header with the patient’s avatar and a camera/upload icon for changing the profile photo
+    ●     Editable “Full name” field
+    ●     Locked/read-only “NIC number” field (padlock icon) — cannot be changed by the patient
+    ●     Editable “Phone” field
+    ●     Editable “Date of birth” field
+    ●     Editable “Address” field
+    ●     Gradient “Save changes” button and a “Cancel” button
+    ●     Bottom navigation bar
+Functionality & System Behaviour
+Allows the patient to correct or update contact and demographic information so SMS alerts and identity
+matching stay accurate, while deliberately locking the NIC number — the unique record key — to preserve the
+integrity of the patient database and prevent accidental duplication of records.
+Research Link
+Reinforces the data-integrity safeguards discussed alongside the digital-registration objective (Objective 2).
+
+
+Screen 13 | Check-in QR
+Actor: Patient (on arrival at the hospital)
+Module / Category: Priority & Verification Module
+Purpose
+An on-site presence-verification screen shown at the hospital reception or ECO waiting area, used to prove the
+patient has physically arrived and to unlock the queue-priority benefit reserved for on-site patients.
+Key Interface Elements
+    ●     “CHECK-IN QR” badge and “Show this at reception” heading
+    ●     Instruction text: “Staff will scan it to confirm you’re on-site”
+    ●     Large scannable QR code unique to the patient’s ticket
+    ●     “Expires in 04:12” countdown badge and the associated ticket number (A-014)
+    ●     “What happens next” info panel: (1) Staff scans this code at reception, (2) Your GPS location is checked
+          against the hospital, (3) You’re marked on-site and may move up the queue
+    ●     “Refresh code” button
+    ●     Bottom navigation bar
+Functionality & System Behaviour
+Combines a time-limited QR code with GPS geofencing so the system can reliably distinguish patients who are
+physically present at the ECO unit from those queueing remotely. A verified on-site check-in feeds directly into
+the priority-queue logic visualised on the Live Queue Tracking screen (Screen 9) and referenced on the Home
+Dashboard (Screen 6), giving staff and the system a trustworthy trigger for reordering the queue.
+Research Link
+Directly implements Research Objective 3 (priority-based queue management) and reduces queue-position
+disputes referenced in the Chapter 1 problem statement.
+
+
+Screen 14 | Notifications
+
+
+
+
+Actor: Patient
+Module / Category: Core Patient Journey
+Purpose
+A chronological feed of every system alert relevant to the patient’s current and recent queue journey, so the
+patient stays informed without needing to keep the Live Queue Tracking screen open at all times.
+Key Interface Elements
+    ●     “Notifications” title and subtitle “Updates about your place in the queue”
+    ●     “Your position moved back” alert (priority-reorder notice, e.g. 2 min ago)
+    ●     “You’re 3 patients away” proximity alert (e.g. 6 min ago)
+    ●     “Checked in successfully” GPS-verified confirmation (e.g. 34 min ago)
+    ●     “Queue slot confirmed” ticket-joined confirmation (e.g. 1 hr ago)
+    ●     “Appointment reminder” (e.g. Yesterday)
+    ●     Bottom navigation bar
+Functionality & System Behaviour
+Implements the push-style, always-available communication channel that the study identifies as central to
+reducing patients’ need to repeatedly ask staff about their turn. Unread items are flagged with a red dot and
+mirrored by the notification bell badge on the Home Dashboard, ensuring priority changes and check-in
+confirmations are never missed.
+Research Link
+Directly supports Research Objective 5 (real-time queue tracking and status communication) and mirrors the
+SMS-alert pattern documented in the OPD-PMMAS prototype reviewed in Chapter 2.
+

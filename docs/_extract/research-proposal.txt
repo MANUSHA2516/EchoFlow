@@ -1,0 +1,1674 @@
+CHAPTER 01
+
+INTRODUCTION
+
+This chapter introduces the research undertaken in this thesis. It begins by presenting the background to
+patient queue management in public healthcare, with particular attention to the Echocardiography (ECO)
+unit of Sri Lankan public hospitals, before narrowing to the specific problems that motivate this study. It
+then states the research aim, objectives, and questions that guide the remainder of the thesis, defines
+the scope of the proposed system with direct reference to the three interfaces implemented in this study,
+discusses the significance of the research at patient, operational, managerial, national, and academic
+levels, and closes by outlining the structure of the chapters that follow.
+
+1.1 Background of the Study
+
+Efficient patient flow is one of the most consistent challenges facing public healthcare delivery worldwide,
+and it becomes especially critical in diagnostic and specialised units where equipment and specialist time
+are limited resources. Queueing theory has long been applied to model and improve service systems in
+healthcare, and a substantial body of research has established that structured queue management
+directly influences patient satisfaction, staff workload, and the overall efficiency of a hospital unit [18]. As
+patient volumes continue to grow in publicly funded hospitals, particularly in South Asian healthcare
+systems, the absence of digital tools to manage this flow has increasingly been identified as a barrier to
+service quality rather than a purely administrative inconvenience.
+
+Sri Lanka's public healthcare system is widely regarded as one of the most accessible in the South Asian
+region, offering free treatment at the point of care through a network of national, provincial, district, and
+base hospitals. However, this accessibility has also produced very high patient volumes at government
+hospitals, and outpatient and diagnostic units frequently operate with manual, paper-based registration
+and queue-handling procedures. Several Sri Lankan studies have documented long and unpredictable
+waiting times in outpatient departments (OPDs) of public hospitals, including at the National Hospital of
+Sri Lanka, and have proposed operational strategies to reduce these delays [1]. Related prototypes have
+explored patient registration and mobile alert systems for OPDs in Sri Lankan hospitals to reduce
+overcrowding and improve communication with patients [2], while other local studies have investigated
+automated patient-flow modelling and computer-vision-based approaches to understanding congestion
+in OPD waiting areas [3], [4], [5]. Collectively, this body of work confirms that queue-related inefficiency
+in Sri Lankan public hospitals is a well-recognised and actively researched problem, but also shows that
+most existing local solutions address general OPD registration and communication rather than the specific
+operational demands of a diagnostic unit such as Echocardiography (ECO).
+
+The Echocardiography (ECO) unit occupies a distinctive position within cardiology services because it
+depends simultaneously on limited numbers of trained sonographers or doctors, a restricted number of
+ECO machines, and examinations that vary considerably in duration depending on the clinical indication.
+International literature on echocardiography workflow confirms that scheduling and throughput
+management in echo laboratories is a recognised operational challenge, driven by growing demand for
+echocardiographic imaging relative to the availability of equipment and qualified staff [28], [29]. Recent
+international research has gone further, applying machine-learning-enhanced queueing network
+simulation specifically to hospital ultrasound operations, demonstrating that hybrid analytical and data-
+driven models can more accurately represent and improve patient flow in imaging units than traditional
+first-come-first-served scheduling alone [21]. This convergence of queueing science and machine learning
+has become a defined research direction internationally, yet it remains largely unexplored in the context
+of Sri Lankan public-hospital ECO units, where registration, queue numbering, and prioritisation are still
+performed manually in most institutions.
+
+At the same time, digital health has become a national policy priority in Sri Lanka. The Ministry of Health's
+Digital Health Blueprint sets out a roadmap for coordinated digital health investment across the public
+sector [8], and the National Digital Health Guidelines and Standards establish the technical and
+governance expectations that any new clinical-adjacent digital system is expected to meet [9]. Public-
+sector information systems such as the Hospital Health Information Management System (HHIMS) have
+already been deployed to digitise parts of hospital administration [10], and private-sector doctor-
+channelling platforms such as e-Channelling and Doc990 have demonstrated that Sri Lankan patients are
+receptive to digital appointment and queue-related services when they are made available [6], [7].
+However, these national platforms are primarily oriented towards appointment booking and general
+hospital information management; none of them provide unit-level, real-time queue prediction or
+priority-based queue management tailored to a high-demand diagnostic service such as ECO.
+
+In parallel, the global body of research applying machine learning (ML) to healthcare wait-time prediction
+has expanded rapidly. Studies using Random Forest, XGBoost, Gradient Boosting, and K-Nearest
+Neighbour models have shown that patient waiting time in outpatient and diagnostic settings can be
+predicted with meaningful accuracy from historical visit data, patient demographics, and temporal
+features [11], [12], [13], [17]. More recent work has extended this to interpretable and dissatisfaction-
+aware prediction models that account for the patient's perception of waiting [14], and to dynamic, self-
+learning queue-management systems that combine predictive analytics with real-time queue state [15],
+[16]. Reinforcement-learning-based approaches have also been explored for prioritising emergency and
+urgent cases within a shared queue, rather than relying purely on arrival order [22], [23], [24]. These
+developments provide the technical foundation on which the proposed system in this study is built,
+adapting proven ML techniques such as Random Forest [26] and XGBoost [27] to the specific operational
+data available in a Sri Lankan public-hospital ECO unit.
+
+The feasibility of a patient-facing digital solution is further supported by broader trends in mobile
+technology adoption. Sri Lanka has one of the higher rates of mobile broadband and smartphone
+penetration in South Asia, and this has already enabled the growth of mobile-based healthcare services
+such as doctor-channelling applications and IVR-based OPD reservation lines [6], [7], [25]. This existing
+familiarity with mobile healthcare interactions among Sri Lankan patients reduces the adoption barrier
+for a dedicated queue-tracking mobile application of the kind proposed in this study, and mirrors similar
+mobile-augmented queue-management approaches documented in other developing-country hospital
+settings [25].
+
+It is against this background — a well-documented local queueing problem, a global trend towards ML-
+based queue prediction, and a national digital health agenda that has not yet reached unit-level diagnostic
+queue management — that this study proposes the design and development of an intelligent system to
+manage patient flow and predict queue behaviour in the ECO section of a Sri Lankan public hospital. The
+system is designed around three coordinated interfaces — a patient-facing mobile application, a staff
+web portal, and an administrator web portal — the final implemented screens of which are presented
+and described in detail in Chapter 04 (Results) of this thesis.
+1.2 Problem Statement
+
+Despite the growing demand for echocardiographic examinations in Sri Lankan public hospitals, the ECO
+unit continues to rely on largely manual and paper-based processes for patient registration, queue
+handling, and reporting. Preliminary investigation conducted as part of this research, together with the
+wider literature on Sri Lankan OPD and hospital queue management [1], [2], [3], identified the following
+interrelated problems:
+
+    •   Manual patient registration: Patient details are recorded on paper, which is time-consuming to
+        search and update, prone to loss or damage, and vulnerable to duplicate registrations.
+
+    •   Long and unpredictable queues: A high daily volume of patients referred from multiple hospital
+        departments creates long queues with no reliable way to estimate waiting time, which is
+        consistent with findings reported in Sri Lankan OPD waiting-time studies [1] and in international
+        queueing-in-healthcare literature [18].
+
+    •   No formal queue-numbering system: Patients are generally served in the order they are
+        remembered rather than through an enforced digital ticketing mechanism, leading to disputes
+        over queue position and repeated staff interruptions.
+
+    •   Absence of appointment scheduling: Patients arrive simultaneously rather than at scheduled
+        intervals, producing avoidable overcrowding during peak hours.
+
+    •   Difficulty prioritising urgent cases: Emergency or clinically urgent patients cannot be reliably
+        identified and moved ahead of the queue under a manual system, a gap that recent priority-
+        queue and reinforcement-learning research has specifically sought to address in other healthcare
+        contexts [22], [23], [24].
+
+    •   Limited doctors and ECO machines: A small number of sonographers/doctors and machines
+        create an unavoidable service bottleneck, echoing the equipment- and staff-constrained nature
+        of echocardiography workflow reported internationally [28], [29].
+
+    •   Poor communication of waiting status: Patients are not informed of expected waiting times or
+        delays, resulting in repeated queries to staff and reduced patient satisfaction.
+
+    •   Lack of real-time monitoring: Hospital management has no live visibility of queue length, station
+        status, or daily patient volume, making it difficult to detect and respond to congestion as it
+        happens.
+
+    •   Inaccurate resource and staff planning: Without historical trend analysis, staffing and resource-
+        allocation decisions are made reactively rather than being informed by predictable demand
+        patterns, despite strong evidence from international demand-forecasting research that patient
+        volumes can be predicted from historical data with useful accuracy [30].
+
+    •   Paper-based reporting and absence of historical analysis: Monthly and annual performance
+        reports are compiled manually, which is time-consuming, error-prone, and does not support
+        trend or pattern analysis for future planning.
+
+These problems are not unique to Sri Lanka; however, the specific combination of a paper-based public-
+hospital environment, a specialised and resource-constrained diagnostic unit, and the absence of any
+locally deployed predictive queue-management tool represents a distinct and, to date, insufficiently
+addressed research gap. Existing Sri Lankan prototypes have targeted general OPD registration and SMS-
+based alerts [2], and existing national platforms such as e-Channelling and HHIMS operate at the level of
+appointment booking and hospital-wide information management rather than real-time, ML-driven
+queue prediction within a single diagnostic unit [6], [9]. Likewise, while international research has begun
+to combine machine learning with queueing models for imaging services [21], this has not yet been
+examined within a low-resource, public-hospital ECO setting such as that found in Sri Lanka. This study is
+therefore motivated by the need for an integrated system that can digitally manage patient registration,
+automatically generate and track queue numbers, prioritise urgent cases, predict waiting times and daily
+patient demand using machine learning, and provide real-time analytical dashboards for hospital staff
+and management — specifically for the ECO unit of a Sri Lankan public hospital.
+
+The practical cost of leaving this problem unaddressed extends beyond patient inconvenience.
+Unpredictable queues in a diagnostic unit such as ECO can lead to missed or delayed examinations,
+extended patient stays elsewhere in the hospital while patients wait for an ECO slot, avoidable overtime
+or congestion for clinical staff, and management decisions on staffing and equipment procurement that
+are based on impression rather than evidence, consistent with the reactive resource-planning weaknesses
+reported in the wider queueing-in-healthcare literature [18], [30]. Addressing these problems through an
+integrated, ML-supported digital system therefore has the potential to produce measurable operational
+improvements — reduced waiting time, improved patient satisfaction, more efficient staff utilisation, and
+evidence-based resource planning — in a setting where the existing literature confirms these gains have
+already been observed following digital or predictive queue interventions elsewhere [11], [15], [22].
+
+1.3 Research Aim and Objectives
+
+1.3.1 Research Aim
+
+The aim of this study is to design, develop, and evaluate an intelligent, machine-learning-supported
+system that digitally manages patient registration and queueing, prioritises urgent cases, predicts patient
+waiting time and queue congestion, and provides real-time operational visibility for staff and
+administrators in the Echocardiography (ECO) unit of a Sri Lankan public hospital.
+
+1.3.2 Research Objectives
+
+    1. To critically review existing local and international literature on hospital queue management,
+       queueing theory, and machine-learning-based wait-time and demand prediction, in order to
+       identify the specific research gap relevant to Sri Lankan public-hospital ECO units [1]–[24].
+
+    2. To design and implement a digital patient registration and automated queue-ticket generation
+       module, corresponding to the patient-facing Home Dashboard, Join Queue, and Live Ticket
+       screens implemented in this study.
+
+    3. To design and implement a priority-based queue management module that allows staff to
+       identify, flag, and advance urgent cases ahead of routine patients, corresponding to the priority-
+       tagging functionality on the Staff Queue Management screen, informed by priority-queue and
+       reinforcement-learning approaches reported in the literature [22], [23], [24].
+    4. To develop a machine-learning model capable of predicting patient waiting time and hourly/daily
+       queue volume for the ECO unit using historical and real-time queue data, drawing on established
+       algorithms such as Random Forest and XGBoost [26], [27] and informed by comparable healthcare
+       wait-time prediction studies [11]–[17], corresponding to the Queue Prediction screen on the staff
+       portal.
+
+    5. To implement real-time queue tracking and status communication for patients, so that they can
+       view their live position, estimated waiting time, and stage of their visit, corresponding to the Live
+       Queue Tracking screen.
+
+    6. To design and implement administrator-level oversight tools, including station/room
+       management, staff-account management, an audit log, system settings, and analytical reporting
+       dashboards, corresponding to the Administrator Web Portal screens implemented in this study.
+
+    7. To evaluate the functionality, usability, and predictive accuracy of the developed system, and to
+       document the results and their implications for public-hospital ECO queue management in Sri
+       Lanka.
+
+1.4 Research Questions
+
+Based on the problem statement and research objectives above, this study seeks to answer the following
+research questions:
+
+    8. What are the primary causes of long and unpredictable patient waiting times in the ECO unit of
+       a Sri Lankan public hospital, and how do they compare with causes documented in local and
+       international literature?
+
+    9. To what extent can a digital registration and automated ticketing system reduce manual
+       administrative overhead and queue-position disputes in a public-hospital ECO unit?
+
+    10. How effectively can a priority-based queue-management mechanism identify and advance
+        clinically urgent patients without significantly disadvantaging routine patients in the same queue?
+
+    11. How accurately can machine-learning models predict patient waiting time and hourly/daily queue
+        volume for the ECO unit using available historical and real-time data?
+
+    12. What real-time information and analytical tools do hospital staff and administrators require to
+        effectively monitor and manage ECO-unit queue congestion, staffing, and resource allocation?
+
+    13. How do patients and hospital staff perceive the usability and usefulness of the proposed mobile,
+        staff, and administrator interfaces in a real or simulated ECO-unit setting?
+
+1.5 Scope of the Study
+
+This study is scoped to the design, development, and evaluation of a queue-prediction and patient-flow-
+management system for a single diagnostic unit — Echocardiography (ECO) — within the context of a Sri
+Lankan general/public hospital. The system is implemented as three coordinated interfaces, each
+supporting a distinct user role, and the scope of this study is defined precisely by the final implemented
+screens of those interfaces, presented in full in Chapter 04 (Results) of this thesis.
+The Patient (User) Mobile Application is in scope and provides five core screens: a Home Dashboard
+summarising the patient's current ticket and quick actions; a Join Queue screen for service/department
+selection; a Live Ticket screen confirming the assigned queue number and status; a Live Queue Tracking
+screen showing a staged, colour-coded timeline of the visit; and a Visit History screen listing past visits
+with status badges.
+
+The Staff Web Portal is in scope and provides seven core screens: a Today's Overview dashboard with key-
+performance-indicator cards and a patient-volume chart; a Queue Management screen for calling,
+serving, skipping, and prioritising patients; a Queue Prediction screen presenting machine-learning-
+generated forecasts of patient influx, average wait time, and peak hours; a Patient Search screen; a Patient
+Detail screen with visit history and a messaging panel; a Reports screen with exportable operational
+statistics; and a Register New Patient modal for adding walk-in patients directly into the queue.
+
+The Administrator Web Portal is in scope and provides eight core screens: a Today's Unit Overview
+dashboard combining unit-wide key-performance-indicator cards, station status, and system alerts; a
+Room/Station Management grid; a Staff Accounts management table; an Add-Staff-Member modal; an
+Audit Log for recording system and user actions; a Settings screen for role-based permissions and security
+configuration; a Register Station modal; and an Add Echo Room modal.
+
+The machine-learning component of the system is limited to predicting patient waiting time and queue
+volume/congestion for the ECO unit based on historical and real-time operational data (such as arrival
+patterns, time of day, day of week, and station capacity); it does not extend to clinical diagnosis, image
+analysis, or interpretation of echocardiographic results, which remain outside the scope of this study.
+Similarly, the system is scoped to queue and patient-flow management within the ECO unit specifically,
+and does not attempt to replace the hospital's existing Hospital Health Information Management System
+(HHIMS) [10] or national e-Channelling appointment infrastructure [6]; rather, it is intended to
+complement these systems at the unit level, in a gap that they do not currently address. Billing, insurance
+processing, and full electronic health-record functionality are likewise excluded from the scope of this
+study. The evaluation of the system is limited to functional testing, usability assessment, and predictive-
+accuracy testing using available and/or simulated ECO-unit queue data, rather than a full multi-hospital
+clinical trial.
+
+1.6 Significance of the Study
+
+This study is significant at the patient, operational, managerial, and academic levels.
+
+For patients, the proposed system replaces uncertainty with visibility: rather than waiting without
+information, patients using the mobile application can view their live ticket number, an estimated waiting
+time, and a staged tracking timeline of their visit, directly addressing the poor communication of waiting
+status identified in the problem statement and in Sri Lankan OPD literature [1], [2].
+
+For front-desk and clinical staff, the Staff Web Portal is significant because it consolidates registration,
+live queue management, priority handling, patient search, and reporting into a single digital workflow,
+reducing the administrative burden associated with manual, paper-based processes and supporting the
+kind of priority handling for urgent cases that manual systems in Sri Lankan public hospitals currently
+struggle to guarantee [22], [23], [24].
+For hospital administrators and management, the Administrator Web Portal provides, for the first time at
+unit level, real-time oversight of station status, staff accounts, system alerts, and audit activity, together
+with reporting and insight tools that support data-driven resource and staffing decisions rather than the
+reactive planning described in the problem statement. This directly responds to the international evidence
+that historical and real-time data can meaningfully inform hospital resource and demand planning [30].
+
+At a national level, this study contributes to Sri Lanka's digital health agenda by extending digital-health
+thinking from hospital-wide information management and appointment booking — the current focus of
+platforms such as HHIMS and e-Channelling [6], [9], [10] — down to real-time, predictive, unit-level queue
+management, an area explicitly identified as under-addressed in the existing literature and national digital
+health guidance [8].
+
+Academically, this study contributes to the growing international literature that combines machine
+learning with queueing and patient-flow management in healthcare [11]–[17], [21]–[24], [26], [27], by
+applying and evaluating these techniques within a previously unexamined context: a resource-
+constrained, diagnostic (echocardiography) unit within a Sri Lankan public hospital. In doing so, it provides
+an empirical case study that can inform both future Sri Lankan digital-health research and broader
+research on ML-based queue management in low-resource healthcare settings internationally.
+
+More broadly, the significance of this study extends to other resource-constrained diagnostic units
+beyond ECO — such as radiology, laboratory, and endoscopy services — that share the same underlying
+combination of limited equipment, limited specialist time, and manual queue handling. Because the
+system architecture proposed in this study (digital registration, priority queueing, ML-based prediction,
+real-time tracking, and administrative oversight) is not clinically specific to echocardiography, the findings
+of this research are intended to offer a transferable model that other diagnostic units within Sri Lankan
+public hospitals, and similarly resourced public-health systems in other developing countries, could adapt
+for their own queue-management needs.
+
+1.7 Structure of the Thesis
+
+The remainder of this thesis is organised into four further chapters, structured as follows:
+
+Chapter 02 – Literature Review: reviews Sri Lankan and international literature on hospital queue
+management, queueing theory, existing digital health and channelling platforms, and machine-learning
+approaches to wait-time and demand prediction, and concludes by consolidating the specific research
+gap this study addresses.
+
+Chapter 03 – Methodology: describes the research design, data-collection approach, the machine-
+learning techniques and tools used to build the prediction model, the system-development approach for
+the three interfaces, and the ethical considerations observed during data collection and testing.
+
+Chapter 04 – Results: presents the final implemented system, including the complete set of Patient
+Mobile Application, Staff Web Portal, and Administrator Web Portal screens, together with the results of
+the machine-learning prediction model.
+
+Chapter 05 – Discussion: interprets the results in relation to the research objectives and questions set
+out in this chapter, discusses the study's limitations, and concludes with recommendations for future
+work.
+Together, these chapters build directly on the background, problem statement, and objectives established
+in this introductory chapter, and culminate in the fully implemented, three-role queue-management and
+prediction system for the ECO unit that is documented in Chapter 04.
+
+1.8 Chapter Summary
+
+This chapter has established the foundation for the remainder of the thesis. It has shown that patient
+queueing in the ECO unit of Sri Lankan public hospitals is a well-documented but still largely unaddressed
+problem, situated between an active body of local OPD-focused research [1]–[5], a maturing international
+literature on machine-learning-based queue and wait-time prediction [11]–[17], [21]–[24], [26], [27], and
+a national digital health agenda that has not yet reached real-time, unit-level queue management [6],
+[8]–[10]. From this background, the chapter derived a detailed problem statement, a clear research aim
+and seven supporting objectives, six research questions, a scope defined precisely by the twenty
+implemented screens across the Patient Mobile Application, Staff Web Portal, and Administrator Web
+Portal, and the significance of the study at patient, staff, management, national, and academic levels. The
+next chapter, Chapter 02, builds on this foundation with a detailed and critical review of the literature
+introduced here.
+
+CHAPTER 02
+
+LITERATURE REVIEW
+
+2.1 Introduction
+
+This chapter presents a critical review of the literature relevant to the design and development of an
+intelligent patient-flow and queue-management system for Echocardiography (ECO) units in Sri Lankan
+public hospitals. The review draws on thirty sources spanning four broad bodies of knowledge: (i) local,
+Sri Lanka-specific studies and national digital-health policy documents that describe the current state of
+outpatient department (OPD) operations and digitisation efforts; (ii) international literature on machine
+learning (ML) approaches to predicting patient wait times and queue behaviour in clinical settings; (iii)
+foundational queueing-theory and simulation research that provides the mathematical and
+methodological basis for modelling patient flow; and (iv) domain-specific literature on echocardiography
+workflow optimisation, priority queueing, Internet-of-Things (IoT)/mobile queue systems, and hospital
+demand forecasting.
+
+The chapter is organised as follows. Section 2.2 reviews the theoretical foundations of queueing theory
+and simulation as applied to healthcare. Section 2.3 examines the Sri Lankan context, including national
+digital-health policy and empirical OPD studies. Section 2.4 reviews global machine-learning approaches
+to wait-time and queue-length prediction, together with the core algorithmic foundations (Random
+Forest and XGBoost) that inform the predictive component of the proposed system. Section 2.5 discusses
+priority queueing and AI-driven hospital queue-management systems. Section 2.6 reviews IoT and mobile-
+based smart-queue architectures. Section 2.7 focuses specifically on echocardiography workflow
+optimisation. Section 2.8 reviews hospital resource-demand forecasting literature. Section 2.9 provides
+a critical, cross-cutting synthesis of the reviewed literature, and Section 2.10 consolidates the research
+gaps that motivate the present study, mapping each gap to the corresponding feature of the proposed
+system. Section 2.11 summarises the chapter.
+
+2.2 Theoretical Foundations: Queueing Theory and Simulation in Healthcare
+Queueing theory provides the mathematical foundation on which almost all quantitative queue-
+management research is built, and it is therefore the natural starting point for this review. Fomundam
+and Herrmann [18] provide a widely cited survey of queueing-theory applications in healthcare, classifying
+prior work into categories such as bed-capacity planning, personnel and staff scheduling, and outpatient
+waiting-time analysis. Their survey establishes the standard vocabulary of arrival and service distributions
+(e.g., M/M/1, M/M/c and M/G/1 systems) that later, more applied studies build upon, and it highlights
+an early and persistent observation in the field: that hospital arrival and service processes rarely satisfy
+the strict statistical assumptions of classical queueing models, which motivates the shift toward simulation
+and, more recently, machine-learning-based approaches.
+
+Building on these theoretical foundations, a study on queue management in a Malaysian public hospital
+[19] demonstrates how classical single- and multi-server queueing models can be adapted to a resource-
+constrained, developing-country public hospital setting that is structurally comparable to Sri Lanka. The
+study shows that even relatively simple queueing interventions, when combined with basic digitisation of
+patient registration, can meaningfully reduce perceived and actual waiting times without requiring
+additional clinical staff or equipment. This finding is particularly relevant to the resource constraints
+described for ECO units in Sri Lankan public hospitals, where the number of doctors and echocardiography
+machines is fixed in the short term.
+
+A more recent study applies queueing theory and simulation specifically to emergency-department
+waiting times through an Accumulative Priority Queue with a Finite Horizon [20]. This model addresses a
+key weakness of both pure first-come-first-served (FCFS) queues and static priority queues: patients with
+lower priority can be indefinitely delayed if higher-priority patients continue to arrive. The finite-horizon
+accumulative priority mechanism allows a patient's effective priority to increase the longer they wait,
+guaranteeing an upper bound on delay while still allowing urgent cases to be seen sooner. This is directly
+relevant to the ECO context, where urgent cardiac referrals must be prioritised over routine outpatient
+echocardiograms without indefinitely starving the routine queue.
+
+The study most methodologically similar to the present research is a high-fidelity, machine-learning-
+enhanced queueing-network simulation of hospital ultrasound operations [21]. Ultrasound, like
+echocardiography, is a multi-stage, equipment- and operator-constrained imaging service, and the study
+combines discrete-event simulation of the queueing network with ML-based surrogate models of patient
+arrival and service-time distributions. This hybrid simulation-plus-ML approach demonstrates that
+predictive models can be embedded inside a queueing-network simulation to produce far more realistic
+estimates of waiting time and throughput than either technique alone, and it directly informs the
+architectural approach adopted in the present study, which likewise couples an ML-based wait-time
+predictor with a queue-management engine rather than treating prediction and queue control as separate
+concerns.
+
+Table 2.1: Summary of queueing-theory and simulation foundations reviewed
+
+Ref.                       Study focus                Method                     Relevance to this study
+
+[18]                       Survey     of    queueing Literature      survey     / Provides the standard
+                           theory in healthcare      taxonomy                     queueing vocabulary and
+                                                                                  model taxonomy used
+Ref.                       Study focus                 Method                     Relevance to this study
+
+                                                                                  throughout this thesis
+
+[19]                       Public-hospital queue Applied queueing model Confirms feasibility of
+                           management, Malaysia + case study            simple           queueing
+                                                                        interventions in resource-
+                                                                        constrained         public
+                                                                        hospitals
+
+[20]                       Emergency-department Accumulative         priority Basis for the bounded-
+                           waiting time reduction queue, finite horizon       delay priority discipline
+                                                                              proposed for urgent ECO
+                                                                              cases
+
+[21]                       Hospital        ultrasound ML-enhanced queueing- Closest     architectural
+                           operations                 network simulation    precedent for combining
+                                                                            ML prediction with queue
+                                                                            simulation
+
+
+
+2.3 Digital Health Infrastructure and OPD Queue Management in Sri Lanka
+
+At the national-policy level, the Sri Lanka Digital Health Blueprint [8], published by the Ministry of Health,
+Nutrition and Indigenous Medicine, sets out the government's strategic vision for digitising health
+services, including outpatient and diagnostic services, and identifies interoperability and data
+standardisation as key enablers. This is reinforced at a technical level by the National Digital Health
+Guidelines and Standards, version 2.0 [9], which specifies the interoperability, data-exchange and system-
+integration requirements that any new digital health system deployed in a Sri Lankan public hospital,
+including the proposed ECO queue-management system, would be expected to satisfy. A retrospective
+review of Sri Lanka's Health Information Management System (HHIMS) covering the period 1998-2017
+[10] documents the country's two-decade digitisation journey, and highlights recurring adoption barriers
+such as inconsistent infrastructure across hospitals, limited staff digital literacy, and fragmented,
+department-level rather than hospital-wide system deployment. These barriers are directly relevant to
+the design and rollout strategy of the proposed system.
+
+At the empirical level, several Sri Lankan studies have examined OPD waiting-time problems directly.
+Dilrukshi et al. [1] propose a strategy to reduce waiting time at the OPD of the National Hospital of Sri
+Lanka, using simulation-based bottleneck analysis of the registration and consultation process to
+recommend targeted resource reallocation. While effective as a diagnostic tool, the study does not
+propose an ongoing digital system; it produces a one-off set of recommendations rather than a
+deployable, continuously operating queue-management platform. Akmal Jahan et al. [2] describe OPD-
+PMMAS, a prototype patient-management and mobile-alert system developed for OPDs in Sri Lankan
+hospitals, which digitises patient registration and issues SMS-based alerts to inform patients of their
+queue status. OPD-PMMAS is conceptually close to the notification and mobile-app components of the
+system proposed in this thesis, but it remains at prototype scale, is not ECO-specific, and does not
+incorporate any predictive or machine-learning capability for estimating waiting time or forecasting
+demand.
+
+A separate strand of Sri Lankan research has modelled OPD patient flow using discrete-event simulation
+techniques [3], quantifying how changes in staffing levels and service-station allocation affect aggregate
+waiting time; however, as with [1], the output is a simulation model for offline analysis rather than a live
+operational system. Two further Sri Lankan studies apply computer-vision techniques to OPD operations:
+one evaluates human-detection algorithms for automatically counting patients in OPD waiting areas [4],
+and a companion study applies nameboard detection and text recognition to automatically identify clinic
+and department signage [5]. Both studies demonstrate that computer-vision techniques can automate
+data capture that would otherwise require manual staff effort, which is relevant to the real-time queue-
+length monitoring and way-finding functions envisaged for the proposed system, although neither study
+integrates its output into an end-to-end queue-management or prediction pipeline.
+
+Finally, two studies describe existing, deployed digital-health services in Sri Lanka that represent the
+current state of practice against which the proposed system can be differentiated. The eChannelling
+digital OPD reservation service [6], launched by eChannelling PLC in partnership with ICTA Sri Lanka,
+allows patients to book OPD appointments at district hospitals online, but it functions purely as a
+booking/scheduling channel and does not perform live queue tracking, priority management, or predictive
+waiting-time estimation within the hospital on the day of the visit. Similarly, the Doc990 mobile service
+documented by GSMA Mobile for Development [7] uses basic mobile channels (voice/SMS) to improve
+patient access to health information and services in Sri Lanka, illustrating the importance of low-friction
+mobile access in a context where not all patients own smartphones, but again without any queue-
+prediction or in-hospital flow-management functionality. Together, these studies confirm that while
+digital OPD services exist in Sri Lanka, none combines patient registration, real-time priority-aware queue
+management, and ML-based wait-time prediction into a single system targeted at a specific diagnostic
+unit such as echocardiography.
+
+Table 2.2: Sri Lanka-specific studies and identified limitations relative to the proposed system
+
+Ref.                       Study / system             Scope                      Limitation relative to the
+                                                                                 proposed ECO system
+
+[1]                        National Hospital OPD S i m u l a t i o n - b a s e d One-off analysis, not a
+                           waiting-time strategy diagnostic study                deployable system; not
+                                                                                 ECO-specific
+
+[2]                        OPD-PMMAS prototype Patient management + Prototype scale; no ML
+                                               SMS alerts           prediction; not ECO-
+                                                                    specific
+
+[3]                        OPD           patient-flow Discrete-event simulation Offline model only; no
+                           simulation                                           live/operational
+                                                                                component
+
+[4]                        Human-detection for OPD Computer-vision patient Not integrated with
+                                                   counting                queue prediction or
+Ref.                       Study / system             Scope                      Limitation relative to the
+                                                                                 proposed ECO system
+
+                                                                                 management
+
+[5]                        Nameboard detection / Computer-vision            way- Not integrated with
+                           OCR                   finding                         queue prediction or
+                                                                                 management
+
+[6]                        eChannelling digital OPD Deployed appointment- Booking only; no in-
+                           reservation              booking service       hospital live queue or
+                                                                          prediction
+
+[7]                        Doc990    mobile    health SMS/voice patient-access General health access; no
+                           service                    channel                  queue management
+
+
+
+2.4 Machine Learning Approaches to Wait-Time and Queue-Length Prediction
+
+A substantial and growing international literature applies supervised machine-learning techniques to
+predict outpatient and clinic waiting times, and this literature forms the primary methodological basis for
+the predictive component of the proposed system. Li et al. [11] predict outpatient waiting time in a tertiary
+children's hospital using a range of ML models trained on features such as registration time, department,
+and physician workload, and report that tree-based ensemble methods consistently outperform
+traditional linear regression approaches. Their results validate the feasibility of ML-based wait-time
+prediction in large, complex hospital settings with multiple departments and physicians, a structural
+profile that is comparable to the multi-doctor, multi-machine environment of an ECO unit.
+
+A related study published in Informatics in Medicine Unlocked [12] compares several machine-learning
+algorithms for predicting wait times in an outpatient clinic and emphasises the importance of feature
+engineering, particularly features that capture a patient's real-time position in the queue and the time of
+day, over simply adding more algorithmic complexity. A 2024 preprint [13] extends this line of work to
+predicting patient wait times together with appointment delays, which is relevant because unpredictable
+delays and no-shows directly affect the accuracy of any real-time queue-length estimate; a robust ECO
+queue-prediction model must therefore account for both service-time variability and non-attendance.
+
+An important methodological contribution comes from a 2024 study that frames wait-time prediction as
+a dissatisfaction-considered, interpretable machine-learning problem [14]. Rather than optimising only
+for predictive accuracy, the study explicitly incorporates patient-reported dissatisfaction as an outcome
+and stresses model interpretability (for example, through feature-importance or SHAP-based
+explanations) so that clinical and administrative stakeholders can trust and act on the model's predictions.
+This directly informs the design choice, adopted in the present study, to favour interpretable tree-
+ensemble models over opaque deep-learning architectures for the ECO wait-time predictor.
+
+Guo et al. [15] propose machine-learning-based prediction models embedded within a dynamic hospital
+queue-management system, rather than as a standalone offline prediction tool, which is conceptually the
+closest precedent to the integrated prediction-plus-management architecture proposed in this thesis. A
+separate JMIR Medical Informatics study conducted in a paediatric hospital [16] validates ML-based wait-
+time prediction on a large-scale, real-world retrospective dataset, providing evidence that such models
+can generalise beyond small pilot studies to practical, real-world deployment. Finally, a 2025 comparative
+study published in the International Journal of Engineering Trends and Technology [17] benchmarks
+multiple machine-learning algorithms against one another for predicting consultation wait times in
+outpatient clinics, providing a direct evidence base for algorithm selection.
+
+The consistent finding across [11], [15], [16] and [17] is that ensemble tree-based methods, and gradient-
+boosted trees in particular, tend to outperform both simple regression baselines and, in several cases,
+more complex neural architectures on structured, tabular hospital operations data of the kind that an
+ECO unit would generate (patient demographics, referral source, time of arrival, doctor/machine
+allocation, and historical service durations). This motivates a closer examination of the two core
+algorithms that underlie most of these studies and that are adopted as the primary candidate algorithms
+for the predictive module of the proposed system.
+
+2.4.1 Core Machine Learning Algorithms: Random Forest and XGBoost
+
+Breiman's Random Forest algorithm [26] is a bagging-based ensemble method that constructs a large
+number of de-correlated decision trees over bootstrap-resampled subsets of the training data and
+features, and aggregates their predictions by averaging (for regression) or majority voting (for
+classification). Random Forests are well suited to noisy, mixed-type healthcare operational data because
+they are relatively insensitive to outliers and missing values, require minimal feature scaling or
+preprocessing, and provide a natural measure of feature importance that supports the interpretability
+requirement identified by [14]. These properties make Random Forest a strong baseline candidate for
+predicting ECO queue length and waiting time from heterogeneous inputs such as patient category,
+referral urgency, time of day, and current queue occupancy.
+
+Chen and Guestrin's XGBoost [27] is a scalable, regularised implementation of gradient-boosted decision
+trees that builds an ensemble of trees sequentially, with each new tree trained to correct the residual
+errors of the preceding ensemble. XGBoost incorporates second-order gradient information, L1/L2
+regularisation, and efficient handling of sparse data, and has become one of the dominant algorithms for
+structured/tabular prediction tasks across many domains, including several of the wait-time prediction
+studies reviewed above (notably [11] and [17], both of which report gradient-boosted trees among their
+top-performing models). Given its consistent superiority on structured healthcare datasets in the
+literature reviewed, and its practical advantages in training speed and predictive accuracy over plain
+Random Forests when properly tuned, XGBoost is adopted as the primary candidate algorithm for the
+ECO queue-length and wait-time prediction module in the proposed system, with Random Forest retained
+as an interpretable benchmark model.
+
+Table 2.3: Comparative summary of machine-learning wait-time prediction studies
+
+Ref.               Clinical context     Algorithm(s) evaluated Reported         best Relevance to ECO
+                                                               performer             prediction module
+
+[11]               Paediatric tertiary Linear regression, tree T r e e - b a s e d Validates       ML
+                   hospital,    multi- ensembles               ensembles           feasibility      in
+                   department                                                      complex,      multi-
+                                                                                   doctor settings
+Ref.               Clinical context      Algorithm(s) evaluated Reported          best Relevance to ECO
+                                                                performer              prediction module
+
+[12]               General outpatient Multiple ML algorithms Not fully specified; Informs feature-set
+                   clinic                                    emphasises feature design        (queue
+                                                             engineering          position, time of
+                                                                                  day)
+
+[13]               Outpatient clinics    ML                        Not fully specified Highlights need to
+                                         regression/classification                     model delays / no-
+                                                                                       shows
+
+[14]               Outpatient            Interpretable ML (e.g. Interpretable          Basis            for
+                   department            tree-based, SHAP)      ensemble model         interpretability
+                                                                                       requirement
+
+[15]               H o s p i t a l - w i d e ML          prediction ML-based dynamic Closest precedent
+                   dynamic queue             embedded   in queue models              for       integrated
+                                             system                                  architecture
+
+[16]               Paediatric hospital, ML              models, Not fully specified Evidence of real-
+                   real-world           retrospective validation                    world deployability
+
+[17]               Outpatient            Comparative           ML Gradient-boosted Direct evidence for
+                   consultation          benchmark                trees            XGBoost selection
+
+[26]               General               Random Forest            -                    Interpretable
+                   (methodological)                                                    benchmark
+                                                                                       algorithm
+
+[27]               General               XGBoost                  -                    Primary candidate
+                   (methodological)                                                    prediction
+                                                                                       algorithm
+
+
+
+2.5 Priority Queueing and AI-Driven Hospital Queue Management
+
+Beyond prediction alone, several recent studies combine artificial intelligence with priority-queueing logic
+to actively manage, rather than merely forecast, hospital queues. A 2024 study optimises hospital queue
+management using a priority-queue algorithm combined with reinforcement learning for emergency-
+service prioritisation [22], showing that a reinforcement-learning agent can learn dynamic prioritisation
+policies that adapt to real-time queue conditions, outperforming static priority-level rules of the kind
+used in most existing systems, including the finite-horizon accumulative priority model of [20]. This
+suggests that a future extension of the proposed ECO system could move from static priority weighting
+(e.g., urgent versus routine referral) toward a learned, adaptive prioritisation policy.
+
+MediQueue [23], a 2025 ML-driven hospital queue-management system, is architecturally close to the
+system proposed in this thesis: it combines predictive modelling with active queue orchestration in a
+single deployable system rather than treating prediction as a separate analytical exercise. As such,
+MediQueue serves as a useful comparative benchmark for the system-design decisions and evaluation
+metrics (e.g., prediction accuracy, average wait-time reduction, queue-length error) adopted later in this
+thesis. Similarly, Kavitha and Maragathasundari [24] propose AI-enabled queueing-theory applications
+for hospital patient-flow optimisation, integrating classical queueing performance metrics (e.g.,
+utilisation, average queue length, average waiting time) with AI-based optimisation techniques. Their
+work reinforces a recurring theme across this section of the literature: that combining classical queueing
+theory with modern AI/ML techniques consistently outperforms either approach used in isolation, which
+is the design philosophy adopted for the ECO queue-management engine proposed in this study.
+
+2.6 IoT and Mobile-Based Smart Queue Systems
+
+The patient-facing component of the proposed system, comprising a mobile application through which
+patients join a queue, receive a live ticket number, and track their position in real time, draws on the
+broader literature on IoT and mobile-based smart-queue systems. An early but influential study describes
+a smart mobile system for the real-time tracking and management of service queues [25]. Although
+developed for general service industries rather than healthcare specifically, the system's core
+architectural pattern, comprising remote ticket issuance, push-notification-based status updates, and live
+queue-position tracking on a patient's own device, is directly transferable to the healthcare context and
+closely mirrors the Home Dashboard, Join Queue, Live Ticket, and Live Queue Tracking screens
+implemented for the patient mobile application in the present study. The absence of a healthcare-specific,
+ML-integrated equivalent of this architecture in the literature reviewed represents a further gap that the
+proposed system addresses.
+
+2.7 Workflow Optimisation in Echocardiography Services
+
+Literature focused specifically on echocardiography workflow, as distinct from general OPD or emergency-
+department queue management, is comparatively scarce, which itself constitutes an important
+motivation for this study. A review published in US Cardiology Review [28] identifies the principal
+bottlenecks that constrain throughput in echocardiography laboratories, including scheduling
+inefficiencies, sonographer and physician availability, equipment turnaround time between studies, and
+reporting/sign-off delays. The review is largely descriptive and does not propose or evaluate a specific
+digital or predictive intervention.
+
+Solis et al. [29] present a more applied study on optimising echocardiography workflow to increase patient
+access to high-quality care, proposing process-level changes such as protocol standardisation,
+appointment triage, and more efficient scheduling of studies by complexity, in order to increase
+throughput without requiring additional machines or staff. This is the most clinically and operationally
+relevant precedent for the ECO-specific focus of the present research. However, neither [28] nor [29]
+incorporates machine-learning-based prediction of waiting time or queue length, nor a real-time digital
+queue-management system with a patient-facing mobile interface; both rely on manual process redesign
+rather than an automated, data-driven system. This absence of a predictive, technology-enabled solution
+specifically for echocardiography services represents one of the clearest gaps addressed by this thesis.
+
+2.8 Demand Forecasting for Hospital Resource Planning
+Finally, a 2025 study published in the Gulf Journal of Advance Business Research examines the forecasting
+of hospital resource demand using a combination of time-series and machine-learning models [30].
+Although the study addresses hospital-wide resource demand (such as bed occupancy and staffing needs)
+rather than a single diagnostic unit, its methodological approach, combining classical time-series
+techniques with machine-learning models to forecast future demand, is directly transferable to
+forecasting daily and weekly patient volumes for an ECO unit. This informs the design of the Queue Length
+Forecasting feature and the administrator-facing analytics dashboard proposed in this thesis, extending
+general hospital demand-forecasting principles to the specific, previously unaddressed context of
+echocardiography services in a Sri Lankan public hospital.
+
+2.9 Critical Analysis and Synthesis
+
+Read together, the thirty sources reviewed in this chapter reveal four consistent patterns. First, the Sri
+Lanka-specific literature ([1]-[7]) demonstrates clear awareness of OPD queue-management problems
+and has produced valuable prototypes and analytical studies, but almost none of these systems
+incorporate predictive machine learning, and none is specific to echocardiography or any single
+diagnostic-imaging unit; most also remain at prototype or one-off analytical scale rather than being
+deployed as production systems, a gap partially explained by the infrastructure and adoption barriers
+documented in the national HHIMS review [10].
+
+Second, the international machine-learning literature ([11]-[17], [26], [27]) provides strong, repeated
+empirical evidence that tree-based ensemble methods, particularly gradient-boosted trees, can predict
+outpatient wait times with useful accuracy, and that interpretability matters for clinical adoption [14].
+However, this literature is overwhelmingly generic to outpatient clinics in general or to specific non-
+cardiac specialties (e.g., paediatrics [11], [16]), and none of the reviewed studies addresses
+echocardiography or any comparably equipment-constrained, multi-stage imaging service.
+
+Third, the queueing-theory, simulation, and priority-queueing literature ([18]-[24]) provides strong
+theoretical and methodological tools, including finite-horizon accumulative priority disciplines [20] and
+reinforcement-learning-based dynamic prioritisation [22], for managing urgent and routine cases fairly
+and efficiently. The ML-enhanced ultrasound simulation study [21] and the MediQueue system [23]
+demonstrate that combining these theoretical tools with ML prediction in a single deployable system is
+both feasible and effective, but, again, no reviewed study applies this combined approach to
+echocardiography specifically, nor within the Sri Lankan public-hospital context.
+
+Fourth, the domain-specific echocardiography literature ([28], [29]) confirms that ECO-specific workflow
+bottlenecks are real and clinically significant, but the proposed remedies are limited to manual process
+redesign rather than automated, predictive, technology-enabled solutions. The IoT/mobile smart-queue
+literature [25] and hospital demand-forecasting literature [30] each provide transferable architectural
+and analytical components (real-time mobile tracking; time-series/ML demand forecasting) that have not
+previously been assembled together, nor applied to an ECO unit.
+
+2.10 Identification of Research Gaps
+
+Synthesising the critical analysis in Section 2.9 with the operational problems identified in the research
+proposal (manual paper-based registration, unpredictable and long queues, absence of a queue-
+numbering system, lack of appointment scheduling, difficulty prioritising urgent cases, absence of real-
+time monitoring, and inaccurate, reactive resource planning), five specific research gaps can be identified
+in the existing literature, none of which is fully addressed by any single reviewed study. Table 2.4 maps
+each identified gap to the supporting literature that reveals it, and to the corresponding feature of the
+system proposed in this thesis.
+
+Table 2.4: Research gaps identified from the literature and corresponding proposed-system features
+
+#                         Identified research gap     Supporting literature     Corresponding proposed-
+                                                                                system feature
+
+G1                        No Sri Lankan OPD/ECO [1]-[7], [11]-[17]              Digital           Patient
+                          system combines digital                               Registration + Waiting
+                          registration with ML-                                 Time Prediction (ML)
+                          based wait-time and
+                          queue-length prediction
+
+G2                        Existing priority-queueing [20], [22], [23], [24]     Priority       Queue
+                          and        reinforcement-                             Management for Urgent
+                          learning approaches are                               Cardiac Cases
+                          not applied within an
+                          ECO-specific, resource-
+                          constrained         public-
+                          hospital setting
+
+G3                        Echocardiography        [28], [29]                    Real-Time         Queue
+                          workflow-optimisation                                 Tracking + Patient Flow
+                          studies rely on manual                                Analysis Dashboard
+                          process redesign rather
+                          than automated, real-
+                          time, data-driven queue
+                          management
+
+G4                        No reviewed system [21], [25]                         Patient              Mobile
+                          combines a patient-facing                             Application (Join Queue,
+                          mobile       smart-queue                              Live Ticket, Live Tracking)
+                          interface with an ML-
+                          enhanced        queueing-
+                          network back end for a
+                          specific       diagnostic-
+                          imaging service
+
+G5                        Hospital        resource- [30]                        Queue Length Forecasting
+                          demand forecasting has                                (ML) + Staff and Resource
+                          not been applied to                                   Monitoring
+                          daily/weekly ECO patient-
+                          volume prediction to
+                          support proactive staffing
+#                         Identified research gap    Supporting literature      Corresponding proposed-
+                                                                                system feature
+
+                          and scheduling
+
+
+
+2.11 Chapter Summary
+
+This chapter has reviewed thirty sources spanning Sri Lanka-specific OPD and digital-health studies, global
+machine-learning approaches to wait-time and queue-length prediction, foundational queueing-theory
+and simulation research, priority-queueing and AI-driven hospital queue-management systems,
+IoT/mobile smart-queue architectures, echocardiography-specific workflow-optimisation studies, and
+hospital resource-demand forecasting. The critical synthesis in Section 2.9 shows that, while each
+individual component required for the proposed system (digital registration, ML-based prediction, priority
+queueing, real-time mobile tracking, and demand forecasting) has precedent somewhere in the literature,
+no existing study or system integrates all of these components together, and none does so specifically for
+echocardiography services within a Sri Lankan public-hospital context. Section 2.10 formalised this
+observation into five specific, literature-grounded research gaps and mapped each to a corresponding
+feature of the system proposed in this thesis. These gaps directly motivate the research aim, objectives,
+and system design described in Chapter 1 and operationalised through the methodology presented in
+Chapter 3.
+
+CHAPTER 03
+
+METHODOLOGY
+
+3.1 Introduction
+
+This chapter presents the research methodology adopted for the design, development, and evaluation of
+an intelligent patient-flow and queue-management system for the Echocardiography (ECO) unit of a Sri
+Lankan public hospital. As established in Chapter 2, the study addresses a set of literature-grounded
+research gaps by combining digital patient registration, machine-learning-based wait-time and queue-
+length prediction, priority-aware queue management, and real-time mobile/web interfaces into a single,
+integrated system, delivered through the Patient Mobile Application, the Staff Web Portal, and the
+Administrator Web Portal.
+
+This chapter is submitted as the methodology component of Interim Submission 01 and therefore focuses
+on the research design, the data-collection strategy, the development tools and technologies, and the
+ethical considerations that govern the study, consistent with the chapter breakdown specified in the
+project guidelines. The detailed presentation of the resulting system implementation (the finalised
+patient, staff, and administrator interface screens) is reported separately in Chapter 4 (Results), and the
+evaluation of those results is discussed in Chapter 5 (Discussion); this chapter therefore describes how
+the system was planned, designed, and built, and how the supporting data and evaluation instruments
+were collected, rather than the outcomes themselves.
+
+The remainder of the chapter is organised as follows: Section 3.2 describes the overall research design;
+Section 3.3 describes the system-development methodology adopted; Section 3.4 presents the functional
+and non-functional requirements derived from the literature review and stakeholder needs; Section 3.5
+describes the proposed system architecture; Section 3.6 describes the data-collection strategy; Section
+3.7 lists the tools and technologies used; Section 3.8 describes the machine-learning model-development
+process; Section 3.9 describes the testing strategy; Section 3.10 discusses the ethical considerations
+addressed by the study; and Section 3.11 summarises the chapter.
+
+3.2 Research Design
+
+This study adopts a Design Science Research (DSR) approach, since its primary contribution is a
+purposefully designed, evaluable software artefact, namely the ECO queue-management system, rather
+than the testing of a pre-existing theoretical hypothesis alone. DSR is well suited to this study because it
+explicitly requires the researcher to (i) identify a real-world problem, addressed in Chapter 1 and
+reinforced by the research-gap analysis in Chapter 2; (ii) define objectives for a solution; (iii) design and
+develop an artefact; (iv) demonstrate the artefact's use; (v) evaluate how well the artefact addresses the
+problem; and (vi) communicate the results, which corresponds directly to the Chapter 1 to Chapter 5
+structure of this thesis.
+
+Within this overarching design, a mixed-methods approach is used. A quantitative strand is applied to the
+development and evaluation of the machine-learning wait-time and queue-length prediction model,
+using historical and simulated queue data and standard regression-evaluation metrics (Section 3.8). A
+qualitative and quasi-experimental strand is applied to requirements elicitation and usability evaluation,
+using structured interviews, observation of the existing manual ECO queue process, and prototype
+walkthroughs with representative staff and patient participants. Combining these two strands allows the
+resulting system to be both technically sound (an accurate, well-evaluated prediction model) and
+operationally appropriate (an interface and workflow that genuinely fits how ECO staff and patients
+work), which single-method designs relying on only one of these strands would not guarantee.
+
+3.3 System Development Methodology
+
+The system itself is developed using an Agile, iterative-prototyping methodology, rather than a single-
+pass waterfall process, because the three user-facing applications (patient, staff, and administrator) each
+require multiple rounds of stakeholder feedback before a workable design is reached, and because the
+machine-learning component benefits from incremental refinement as more representative data
+becomes available. Figure 3.1 illustrates the six-stage cycle followed for each development iteration:
+requirements gathering, system and UI/UX design (wireframing), prototype development, iterative
+implementation in short sprint builds, testing and evaluation, and refinement based on stakeholder
+feedback, after which the cycle repeats for the next set of features or screens.
+
+In practice, this cycle was applied first to establish the overall information architecture of the system (the
+three-portal structure described in Section 3.5), then to progressively wireframe and prototype each
+screen, beginning with the core patient journey (Home Dashboard, Join Queue, Live Ticket, and Live
+Queue Tracking), followed by the staff-side operational screens (Today's Overview, Queue Management,
+and Queue Prediction), and finally the administrator-side management screens (Today's Unit Overview,
+Room/Station Management, Staff Accounts, Audit Log, and Settings). Low-fidelity wireframes were first
+produced to validate screen flow and information hierarchy, before being refined into the high-fidelity
+mockups presented in Chapter 4. This staged approach ensured that each interface was validated against
+the functional requirements in Section 3.4 before implementation effort was committed to it.
+Figure 3.1: Agile iterative development cycle adopted for this study
+
+3.4 Requirements Analysis
+
+System requirements were derived from three sources: the operational problems identified in the
+research proposal (Chapter 1), the research gaps identified through the literature review (Chapter 2,
+Section 2.10), and requirements-elicitation activities carried out directly with prospective users, described
+in Section 3.6. Table 3.1 summarises the core functional requirements and maps each to the interface(s)
+in which it is realised, ensuring direct traceability between the requirements identified in this chapter and
+the screens presented in Chapter 4.
+
+Table 3.1: Core functional requirements mapped to system interfaces
+
+Req. ID                             Functional requirement              Primary interface(s)
+
+FR1                                 Allow a patient to digitally join a Patient App - Join Queue, Live
+                                    queue      for     a      selected Ticket
+                                    department/service and receive a
+                                    ticket
+
+FR2                                 Provide the patient with a live, Patient App - Live Queue Tracking
+                                    real-time view of their queue
+                                    position and visit stage
+
+FR3                                 Allow staff to call, skip, or Staff Portal - Queue Management
+                                    complete tickets and manage the
+                                    live queue
+
+FR4                                 Automatically flag and prioritise Staff Portal - Queue Management
+                                    urgent/critical patients in the (priority tag)
+Req. ID                               Functional requirement                Primary interface(s)
+
+                                      queue
+
+FR5                                   Predict expected patient influx, Staff Portal - Queue Prediction
+                                      peak hours, and average wait time
+                                      using historical/live data
+
+FR6                                   Allow staff to search, view, and Staff Portal - Patient Search,
+                                      register patient records, and add Patient Detail, Register New
+                                      new patients to the queue         Patient
+
+FR7                                   Generate           operational Staff Portal - Reports; Admin Portal
+                                      performance reports over a - Reports & Insights
+                                      selectable period
+
+FR8                                   Provide administrators with a unit- Admin Portal - Today's Unit
+                                      wide overview of stations, queues, Overview
+                                      and system alerts
+
+FR9                                   Allow administrators to manage Admin Portal - Room/Station
+                                      rooms/stations, including capacity Management, Add Echo Room
+                                      and auto-scheduling
+
+FR10                                  Allow administrators to manage Admin Portal - Staff Accounts, Add
+                                      staff accounts, roles, and access Staff Member, Settings
+                                      permissions
+
+FR11                                  Maintain a chronological, user- Admin Portal - Audit Log
+                                      attributed audit log of system
+                                      actions
+
+FR12                                  Allow a patient to view their past Patient App - Visit History
+                                      visit history
+
+
+
+In addition to these functional requirements, the system is designed against a set of non-functional
+requirements: (i) usability, since the patient application in particular must be usable by patients with
+varying levels of digital literacy, in line with the accessibility concerns noted in the Sri Lankan digital-health
+literature reviewed in Chapter 2; (ii) real-time performance, since the Live Queue Tracking and Queue
+Management screens must reflect ticket-state changes with minimal latency for the two interfaces to
+remain synchronised; (iii) reliability and availability, given that a queue-management outage would
+directly disrupt clinical operations; (iv) security and data privacy, addressed in detail in Section 3.10; and
+(v) scalability, so that the same architecture can, in principle, be extended from a single ECO unit to other
+diagnostic units in the future.
+
+3.5 System Architecture
+The proposed system follows a layered, multi-client architecture, illustrated in Figure 3.2. At the
+presentation layer, three separate client applications are provided for the three user roles identified in
+the requirements analysis: the Patient Mobile Application, the Staff Web Portal, and the Administrator
+Web Portal. All three clients communicate with a shared backend server through a common REST
+Application Programming Interface (API), which centralises authentication, ticket issuance and state
+management, notification dispatch, and core business logic, ensuring that an action performed on one
+interface (for example, a staff member marking a ticket as complete on the Queue Management screen)
+is immediately reflected on the corresponding patient-side interface (the Live Queue Tracking screen).
+
+Below the API layer, the architecture separates two concerns: a Machine Learning Prediction Service,
+responsible for generating queue-length and wait-time forecasts consumed by the Queue Prediction
+screen and by the estimated-wait-time indicators shown in the patient application; and a Central
+Database, which persists patient records, tickets, station and staff data, and the audit log. The ML
+Prediction Service is trained offline using historical queue and appointment records (Section 3.6 and
+Section 3.8) and is queried by the API layer at inference time, allowing the prediction model to be
+retrained and redeployed independently of the rest of the system as more operational data becomes
+available, without requiring changes to the client applications.
+
+
+
+
+Figure 3.2: Proposed system architecture
+
+3.6 Data Collection
+
+Two categories of data are collected to support this study: requirements/evaluation data, used to design
+and validate the system's interfaces and workflow, and operational data, used to train and evaluate the
+machine-learning prediction model.
+Requirements and evaluation data are collected directly from prospective users of the system at a
+selected Sri Lankan general hospital's ECO unit. Two participant groups are targeted: (i) clinical and
+administrative staff directly involved in the current manual queue process, including receptionists/clerks,
+nursing staff, and the medical officers responsible for performing echocardiograms; and (ii) patients
+attending the ECO unit for routine or urgent examinations. Data-collection instruments include semi-
+structured interviews with staff to elicit the functional requirements summarised in Table 3.1, direct, non-
+participant observation of the existing manual registration and queueing process to document current
+bottlenecks (corroborating the problems identified in Chapter 1), and structured prototype walkthroughs
+with both staff and patients, in which participants are asked to complete representative tasks (for
+example, joining a queue, or calling and completing a ticket) using the Figma prototypes before
+implementation, and again using the implemented screens during usability testing (Section 3.9).
+
+Operational data for the machine-learning component is drawn, subject to the ethical and access
+approvals described in Section 3.10, from retrospective, de-identified ECO attendance and scheduling
+records maintained by the hospital, covering attributes such as appointment/arrival date and time,
+referral source and urgency category, assigned doctor and echo room, recorded service start and end
+time, and patient demographic category (age band and sex, without any directly identifying information).
+Where hospital-record access is restricted or insufficient historical volume is available within the project
+timeframe, a supplementary, literature-informed synthetic dataset is generated, using arrival- and
+service-time distributions consistent with the queueing-theory and simulation literature reviewed in
+Chapter 2 (notably [18], [20], and [21]) and the general hospital demand-forecasting approach of [30], to
+ensure the prediction model can be developed and evaluated even before a full historical dataset is
+available, and to be replaced or augmented with real data as it becomes accessible. Table 3.2 summarises
+the core data attributes collected or generated for the prediction model.
+
+Table 3.2: Core data attributes for the queue-length and wait-time prediction model
+
+Attribute                           Type                                Description / role
+
+Arrival timestamp                   Datetime                            Date, day of week, and time of
+                                                                        patient arrival/registration
+
+Referral source                     Categorical                         Department or clinic that referred
+                                                                        the patient (e.g. cardiology,
+                                                                        general OPD)
+
+Priority / urgency category         Categorical                         Normal or urgent, used          for
+                                                                        priority-queue weighting
+
+Assigned doctor / room              Categorical                         Identifier of the doctor and echo
+                                                                        room/station allocated
+
+Queue length at arrival             Numeric                             Number of patients ahead in the
+                                                                        queue at the time of arrival
+
+Service start / end time            Datetime                            Recorded start and end of the
+                                                                        echocardiography examination
+Attribute                          Type                                Description / role
+
+Service duration                   Numeric (derived)                   Target variable component; time
+                                                                       taken     to    complete     the
+                                                                       examination
+
+Historical daily volume            Numeric                             Aggregated patient count for the
+                                                                       corresponding day/time-slot in
+                                                                       prior periods
+
+Actual wait time                   Numeric (target)                    Primary prediction target: time
+                                                                       between arrival and service start
+
+
+
+3.7 Tools and Technologies
+
+The following tools and technologies, summarised in Table 3.3, were selected for this study on the basis
+of their suitability for rapid, iterative development of a multi-client system with an embedded machine-
+learning service, their widespread adoption (and therefore available documentation and community
+support), and their compatibility with the resource constraints typical of a final-year academic project.
+Where more than one comparable tool exists in a category, the selection reflects the tool used for this
+implementation; equivalent alternatives are noted where relevant.
+
+Table 3.3: Tools and technologies adopted for system design, development, and evaluation
+
+Category                           Tool / technology                   Purpose
+
+UI/UX prototyping                  Figma                               Wireframing and high-fidelity
+                                                                       mockups for all patient, staff, and
+                                                                       administrator screens
+
+Patient mobile application         Flutter (cross-platform)            Single   codebase      for     the
+                                                                       Android/iOS patient application
+
+Staff and     administrator   web React.js                             Component-based        front-end
+portals                                                                framework for the two web portals
+
+Backend / API server               Node.js with Express (REST API)     Central      API        layer        for
+                                                                       authentication,      ticketing,     and
+                                                                       business logic
+
+Database                           MySQL (relational)                  Persistent storage for patients,
+                                                                       tickets, stations, staff, and audit
+                                                                       logs
+
+Machine learning development       Python, scikit-learn,      XGBoost, Data      preprocessing,          model
+                                   Pandas, NumPy                       training, and evaluation
+
+Version control                    Git and GitHub                      Source-code    management           and
+Category                             Tool / technology                    Purpose
+
+                                                                          collaboration history
+
+API testing                          Postman                              Manual and automated testing of
+                                                                          REST API endpoints
+
+Project and sprint tracking          Trello                               Agile sprint planning and task
+                                                                          tracking across development
+                                                                          cycles
+
+Deployment / hosting (prototype) Cloud platform (e.g. Firebase / Hosting of the prototype backend
+                                 AWS free-tier)                  and database for demonstration
+                                                                 and testing
+
+
+
+3.8 Machine Learning Model Development Process
+
+The wait-time and queue-length prediction model is developed following a standard supervised-learning
+pipeline. Raw data collected as described in Section 3.6 is first cleaned and pre-processed: missing values
+are imputed or the corresponding records excluded, categorical attributes (referral source, priority
+category, assigned doctor/room) are encoded, and derived features such as day-of-week, hour-of-day,
+and rolling historical average queue length for the corresponding time slot are engineered, consistent
+with the feature-engineering emphasis identified in the literature review (notably [12] and [14]).
+
+The resulting dataset is partitioned into training and test subsets (a standard 80/20 split, with k-fold cross-
+validation applied on the training subset for hyperparameter tuning) so that reported performance
+reflects the model's ability to generalise to unseen queue conditions rather than merely fitting historical
+data. Consistent with the comparative evidence presented in Chapter 2 (Section 2.4.1), two candidate
+algorithms are trained and compared: Random Forest [26], used as an interpretable benchmark model,
+and XGBoost [27], used as the primary candidate model given its consistently strong performance on
+structured, tabular healthcare-operations data reported in [11] and [17]. Model performance is evaluated
+using standard regression metrics, namely Mean Absolute Error (MAE), Root Mean Squared Error (RMSE),
+and the coefficient of determination (R²), which together capture both the average magnitude of
+prediction error and the proportion of variance in actual wait times explained by the model.
+
+The selected model is exposed as an internal prediction service (Section 3.5) that the API layer queries to
+populate the estimated-wait-time indicators on the Patient Mobile Application and the hourly forecast
+chart on the Staff Portal's Queue Prediction screen. Because the model is intended to be retrained
+periodically as new operational data accumulates, feature-importance outputs from both the Random
+Forest and XGBoost models are also retained and reviewed, in line with the interpretability requirement
+identified in [14], so that hospital administrators can understand which factors most strongly influence
+predicted wait times.
+
+3.9 System Testing Strategy
+
+The system is tested at three levels, consistent with the iterative development methodology described in
+Section 3.3. Unit testing is applied to individual backend functions (for example, ticket-priority calculation
+and API endpoint responses) to confirm that each component behaves correctly in isolation. Integration
+testing verifies that the three client applications, the API layer, the ML prediction service, and the database
+interact correctly, for example confirming that a ticket marked complete on the Staff Portal's Queue
+Management screen is reflected within an acceptable latency on the Patient Application's Live Queue
+Tracking screen.
+
+Usability testing is conducted with representative staff and patient participants recruited through the
+same process described in Section 3.6, using structured task scenarios (for example, joining a queue and
+interpreting the live ticket screen as a patient; calling, prioritising, and completing tickets as a staff
+member) and the System Usability Scale (SUS) questionnaire to obtain a standardised, comparable
+usability score for each interface. Finally, user-acceptance testing (UAT) is conducted with hospital staff
+to confirm that the finalised system, as presented in Chapter 4, satisfies the functional requirements in
+Table 3.1 and is fit for the intended operational context before any recommendation for deployment is
+made.
+
+3.10 Ethical Considerations
+
+Because this study involves human participants (hospital staff and patients) and, potentially, hospital
+records containing personal information, it raises a number of ethical considerations that are addressed
+as follows.
+
+First, formal ethical approval is sought from the relevant university research-ethics review body prior to
+any data collection, and, given that data collection takes place within a public hospital, administrative
+permission is separately sought from the hospital's own ethics or administrative review board and from
+the ECO unit's clinical lead. No interviews, observation, or prototype testing involving staff or patients is
+conducted prior to these approvals being granted.
+
+Second, participation in interviews, observation, and usability testing is entirely voluntary. All participants
+are provided with a plain-language information sheet describing the purpose of the study, what
+participation involves, and how their data will be used, and are asked to provide informed consent (or,
+for observation of routine clinic operations, are informed of the observer's presence and purpose) before
+taking part. Participants retain the right to withdraw at any point without any effect on their care or
+employment.
+
+Third, data privacy and protection are addressed throughout the study in line with Sri Lanka's Personal
+Data Protection Act, No. 9 of 2022. Any hospital records used to train the machine-learning prediction
+model are de-identified before use, with direct identifiers (patient name, national identity number, and
+contact details) removed or replaced with non-reversible study identifiers, retaining only the operationally
+relevant attributes listed in Table 3.2. Access to any identifiable data that is unavoidably required during
+the requirements-gathering phase (for example, to link a specific interview participant's feedback to their
+role) is restricted to the researcher and stored securely, separately from the operational dataset used for
+model training.
+
+Fourth, the system design itself incorporates features that support ethical and secure data governance in
+eventual deployment, namely the Audit Log, which records a timestamped, user-attributed history of
+system actions for accountability, and the Settings screen's role-and-permission matrix and security
+controls (including two-factor authentication and session timeout), which restrict access to patient data
+on a need-to-know basis according to staff role.
+
+Finally, because the study concerns the prioritisation of patients, including urgent cardiac cases, care is
+taken that the priority-queueing logic (Section 3.4, FR4) is designed and evaluated to avoid introducing or
+amplifying unfair treatment of any patient group, and that the machine-learning prediction model is
+evaluated for consistency of performance across patient categories, rather than optimising only for
+average accuracy across the whole dataset.
+
+3.11 Chapter Summary
+
+This chapter has presented the research methodology adopted for this study, framed as a Design Science
+Research project combining quantitative machine-learning model development with qualitative,
+stakeholder-driven requirements analysis and usability evaluation. It described the Agile, iterative-
+prototyping approach used to move from requirements through wireframes and Figma prototypes to the
+implemented system presented in Chapter 4, the functional and non-functional requirements derived
+from the research gaps identified in Chapter 2, and the layered system architecture connecting the three
+client applications to a shared API, machine-learning prediction service, and central database. It further
+described the data-collection strategy for both requirements/evaluation data and machine-learning
+training data, the tools and technologies used, the machine-learning model-development pipeline built
+around Random Forest and XGBoost, the three-level testing strategy, and the ethical considerations,
+including institutional approvals, informed consent, data de-identification, and fairness in priority-queue
+design, that govern the conduct of the study. Together, these elements provide the methodological basis
+for the system implementation results presented in Chapter 4 and the evaluation and discussion
+presented in Chapter 5.
+
+
+CHAPTER 05
+
+DISCUSSION
+
+5.1 Introduction
+    This chapter discusses the system implementation results presented in Chapter 4, the twenty
+finalised interface screens of the Patient Mobile Application, the Staff Web Portal, and the
+Administrator Web Portal, in relation to the research problem set out in Chapter 1, the literature
+and research gaps identified in Chapter 2, and the methodology described in Chapter 3. Where
+Chapter 4 reported what was built, this chapter interprets why it matters: it evaluates how far
+the implemented system addresses the fourteen operational problems originally identified in
+the ECO unit, examines the extent to which each of the five research gaps identified in Section
+2.10 has been closed by the delivered design, compares the resulting system against the existing
+Sri Lankan and international systems reviewed in Chapter 2, and reflects critically on the study's
+implications, limitations, and directions for future work.
+
+    Because this thesis is reported at the stage of a completed system design and interface
+implementation rather than a live, multi-month clinical deployment, the discussion in this
+chapter is necessarily framed around the design decisions embodied in the implemented screens
+and the extent to which they satisfy the functional and non-functional requirements set out in
+Table 3.1, rather than around long-run clinical outcome data (for example, measured reductions
+in mean patient waiting time over a full operational period), which falls outside the scope of the
+interim system delivered and is instead identified as a priority for the pilot evaluation
+recommended in Section 5.10. Any figures shown within the implemented Reports, Queue
+Prediction, or Dashboard screens in Chapter 4 (for example, the illustrative KPI values on the
+Staff Dashboard) are sample data used to demonstrate the analytics interface and are not
+presented here as measured clinical results.
+
+    The remainder of the chapter is organised as follows. Section 5.2 discusses the implemented
+system as a whole in relation to the original research problem. Sections 5.3 to 5.5 discuss the
+Patient Mobile Application, Staff Web Portal, and Administrator Web Portal in turn. Section 5.6
+evaluates the achievement of the research objectives and the closure of the five research gaps
+identified in Chapter 2. Section 5.7 compares the resulting system with existing and related
+systems. Section 5.8 discusses the theoretical, practical, and methodological implications of the
+study. Section 5.9 discusses its limitations, and Section 5.10 sets out recommendations for future
+work, before Section 5.11 summarises the chapter.
+
+
+5.2 The Implemented System in Relation to the Research Problem
+    Chapter 1 identified fourteen interrelated operational problems affecting the ECO unit,
+ranging from manual, paper-based registration and the absence of any queue-numbering system,
+through poor communication of waiting times and difficulty prioritising urgent cases, to the
+absence of real-time monitoring, historical data analysis, and reliable demand forecasting. Read
+against this list, the twenty implemented screens reported in Chapter 4 can be understood as a
+coherent, role-differentiated response: rather than a single generic application, the system
+deliberately separates the patient-facing concern (visibility and self-service), the staff-facing
+concern (operational control of the live queue), and the administrator-facing concern (unit-wide
+oversight, staffing, and governance), because the underlying problems identified in Chapter 1
+are themselves distributed across these three roles and cannot be adequately addressed by a
+single undifferentiated interface.
+
+    This role-based separation directly mirrors the structure of the requirements analysis in
+Section 3.4 (Table 3.1) and confirms that the requirements-elicitation and iterative-prototyping
+methodology described in Chapter 3, moving from wireframes through Figma prototypes to the
+finalised screens, produced an information architecture that traces cleanly back to the originally
+identified problems rather than to an arbitrary or generic queue-management template. The
+following three sections examine each of the three interfaces in turn.
+
+
+5.3 Discussion: Patient Mobile Application
+    The five patient-facing screens (Home Dashboard, Join Queue, Live Ticket, Live Queue
+Tracking, and Visit History) directly target the communication and predictability problems
+identified in Chapter 1, specifically the observations that patients are not informed about
+expected waiting times, that delays are not communicated effectively, and that patients
+repeatedly ask staff about their turn. By surfacing a persistent, estimated-wait-time badge on
+the Home Dashboard and a colour-coded, stage-by-stage timeline on the Live Queue Tracking
+screen, the implemented design converts what was previously tacit, staff-mediated information
+("how much longer?") into an always-available, self-service data point on the patient's own
+device. This is consistent with the design rationale established in the literature reviewed in
+Chapter 2: the OPD-PMMAS prototype [2] demonstrated that SMS-based status alerts
+measurably reduce patients' need to repeatedly query staff, and the general-purpose smart-
+queue architecture of [25] shows that live, mobile position-tracking is both technically feasible
+and well understood as a pattern; the patient application implemented here extends this pattern
+from a generic service queue to the specific, higher-stakes context of a diagnostic-imaging unit.
+    The Join Queue screen's department/service selector and queue-type toggle operationalise
+the digital-registration objective identified in Chapter 1 (replacing paper-based registration) and
+in the research-gap analysis (G1, Section 2.10), while directly addressing the duplicate-
+registration and misplaced-record problems associated with manual registration. It is worth
+noting, however, that the patient application assumes smartphone ownership and a reasonable
+level of digital literacy; the GSMA case study on Doc990 [7] specifically highlights that not all
+patients in the Sri Lankan public-health context have smartphone access, which is a limitation
+discussed further in Section 5.9 and which motivates the SMS-fallback recommendation in
+Section 5.10.
+
+
+5.4 Discussion: Staff Web Portal
+    The seven staff-facing screens address the operational core of the problems identified in
+Chapter 1: the absence of a queue-numbering system, the difficulty of prioritising urgent cases
+manually, staff shortages and administrative overload, and the lack of real-time monitoring. The
+Queue Management screen's "Now serving" card with Call/Skip/Complete actions, together with
+its colour-coded priority tag for urgent cases, operationalises the priority-queueing requirement
+(FR4, Table 3.1) that was informed directly by the accumulative priority-queue model of [20] and
+the reinforcement-learning-based dynamic prioritisation approach of [22] discussed in Chapter
+2; while the implemented interface currently exposes a simpler, staff-assigned urgent/normal
+priority tag rather than the fully adaptive reinforcement-learning policy described in [22], it
+establishes the interaction surface (a visible, actionable priority indicator within the live-queue
+list) on which such a policy could be layered in future iterations, as discussed in Section 5.10.
+
+    The Queue Prediction screen is the clearest embodiment of the machine-learning
+contribution motivated in Chapter 2: its hourly forecast chart and recommended-action panel
+operationalise the wait-time and queue-length prediction pipeline described in Section 3.8 (built
+around Random Forest [26] and XGBoost [27]), giving staff the kind of forward-looking, demand-
+forecasting capability that Chapter 1 identified as entirely absent from the current manual
+process and that the reviewed literature ([11], [15], [16], [17]) shows to be both feasible and,
+when interpretable, trusted by clinical stakeholders [14]. The Patient Search, Patient Detail, and
+Register New Patient screens jointly replace the paper-based registration and record-searching
+problems identified in Chapter 1, while the Reports screen operationalises the shift from paper-
+based, manually compiled monthly reporting toward on-demand, exportable operational
+reporting. Collectively, these seven screens demonstrate that the staff portal is not simply a
+digitised version of the paper register, but an integrated operational control surface that
+combines registration, live-queue control, predictive analytics, and reporting in a single, role-
+appropriate interface, consistent with the MediQueue architecture [23] discussed in Chapter 2
+as the closest existing precedent for this kind of integrated design.
+
+
+5.5 Discussion: Administrator Web Portal
+    The eight administrator-facing screens address problems in Chapter 1 that are unit-wide
+rather than per-patient in nature: inaccurate, reactive resource planning, the inability of hospital
+management to monitor queue lengths across the unit, and the absence of any reliable
+mechanism to estimate future workload for staffing purposes. The Today's Unit Overview
+dashboard, with its station-status table and system-alerts panel, gives administrators the
+"control-room" visibility that Chapter 1 identified as missing, while the Room/Station
+Management and Add Echo Room screens operationalise resource planning at the level of
+physical capacity, including the auto-scheduling toggle, which represents a direct design
+response to the equipment-bottleneck problem highlighted in both Chapter 1 and the
+echocardiography-specific workflow literature reviewed in Chapter 2 [28], [29].
+
+    The Staff Accounts and Add Staff Member screens address the staff-shortage and
+administrative-overload problems from a governance perspective, by making staff capacity and
+role allocation directly visible and manageable rather than tracked informally. The Audit Log and
+Settings screens were not derived from a problem explicitly listed in Chapter 1, but rather from
+the ethical and data-governance considerations discussed in Section 3.10; their inclusion reflects
+a design decision to treat accountability and access control as first-class system requirements
+from the outset, rather than as an afterthought once the operational features were complete,
+which is consistent with the requirement, established in Chapter 3, that any system handling
+patient data in a Sri Lankan public hospital must be designed with the Personal Data Protection
+Act, No. 9 of 2022, in mind from the earliest design stages.
+
+
+5.6 Achievement of Research Objectives and Closure of Research Gaps
+      Section 2.10 identified five specific research gaps (G1-G5) in the existing literature. Table 5.1
+revisits each gap and evaluates the extent to which it has been addressed by the implemented
+system reported in Chapter 4, distinguishing between gaps that are substantially closed by the
+current design and implementation, and gaps that are only partially closed pending the pilot
+deployment and model-retraining work recommended in Section 5.10.
+
+Table 5.1: Evaluation of research-gap closure against the implemented system
+Gap                       Identified gap (Section Status                                Evidence          from
+                          2.10)                                                         implemented system
+G1                        No SL OPD/ECO system Substantially addressed                  Digital        registration
+                          combines         digital                                      (Patient Search/Register
+                          registration with ML-                                         New Patient) integrated
+                          based prediction                                              with       the      Queue
+                                                                                        Prediction screen and
+                                                                                        patient-side     wait-time
+                                                                                        indicators, sharing a
+                                                                                        common            backend
+                                                                                        (Section 3.5)
+G2                        P r i o r i t y - q u e u e i n g / R L Partially addressed   Priority      tag      and
+                          approaches not applied                                        Call/Skip/Complete
+                          within an ECO-specific,                                       controls implemented in
+                          resource-constrained                                          Queue        Management;
+                          setting                                                       adaptive          RL-based
+                                                                                        prioritisation left for
+                                                                                        future work (Section 5.10)
+G3                        Echo workflow studies Substantially addressed                 Real-Time         Queue
+                          rely on manual redesign                                       Tracking (patient) and
+                          rather than automated,                                        Queue       Management
+                          real-time        queue                                        (staff)   provide   live,
+                          management                                                    automated,      two-way-
+                                                                                        synchronised queue state
+G4                        No system combines a Substantially addressed                  Patient             Mobile
+                          patient-facing   mobile                                       Application (Join Queue,
+                          smart-queue    interface                                      Live Ticket, Live Tracking)
+                          with an ML-enhanced                                           integrated with the ML
+Gap                        Identified gap (Section Status                  Evidence          from
+                           2.10)                                           implemented system
+                           back end for a diagnostic-                      Prediction Service in the
+                           imaging service                                 architecture (Figure 3.2)
+G5                         Demand forecasting not Partially addressed      Queue Prediction screen
+                           applied to daily/weekly                         implements            the
+                           ECO        patient-volume                       forecasting interface and
+                           prediction                                      pipeline    design;    full
+                                                                           validation against real
+                                                                           multi-month ECO volume
+                                                                           data is pending (Section
+                                                                           5.9)
+
+
+
+5.7 Comparison with Existing and Related Systems
+      Table 5.2 situates the implemented system against the principal existing and related systems
+reviewed in Chapter 2, comparing them on the dimensions most relevant to the ECO context:
+whether the system offers real-time, in-hospital queue tracking (as opposed to booking only),
+whether it incorporates machine-learning-based prediction, whether it supports priority-based
+handling of urgent cases, and whether it is targeted at a specific diagnostic-imaging service rather
+than general OPD attendance.
+
+Table 5.2: Comparison of the proposed system with existing and related systems
+System               Real-time         in- M L - b a s e d Priority handling     Diagnostic-imaging
+                     hospital tracking     prediction                            specific
+eChannelling OPD No (booking only)        No                 No                  No
+reservation [6]
+OPD-PMMAS [2]        Partial (SMS alerts) No                 No                  No
+MediQueue [23]       Yes                  Yes                Partial             No
+M L - e n h a n c e d Simulation only     Yes                No                  Yes (ultrasound)
+ultrasound
+simulation [21]
+Proposed         ECO Yes                  Yes                Yes                 Yes
+system (this study)                                                              (echocardiography)
+5.8 Theoretical, Practical, and Methodological Implications
+    Theoretically, this study contributes a concrete demonstration that the individually well-
+established components identified in the Chapter 2 literature, digital registration, priority
+queueing, ML-based wait-time prediction, and real-time mobile tracking, can be integrated into
+a single, coherent system architecture for a specific, equipment-constrained diagnostic service,
+extending the general hospital-queue-management literature ([15], [22], [23], [24]) into the
+previously unaddressed echocardiography context and extending the echocardiography-specific
+workflow literature ([28], [29]) from manual process redesign into an automated, data-driven
+design.
+
+    Practically, the implemented system offers Sri Lankan public-hospital ECO units a design that
+could plausibly be adopted with modest infrastructure investment, since it builds on architectural
+patterns (REST APIs, relational databases, cross-platform mobile frameworks) that are already in
+use elsewhere in the national digital-health ecosystem described by the Digital Health Blueprint
+[8] and the NDHGS v2.0 [9], rather than requiring an entirely bespoke technology stack.
+Methodologically, the study demonstrates the practical value of combining a Design Science
+Research framing with an Agile, iterative-prototyping process (Chapter 3) for health-information-
+systems research in a resource-constrained public-hospital setting: the staged progression from
+wireframes to Figma prototypes to implemented screens, validated at each stage against the
+functional-requirements table (Table 3.1), provided a disciplined mechanism for keeping the
+resulting system traceable to the original research problem, rather than drifting toward generic
+queue-management functionality disconnected from the ECO-specific context.
+
+
+5.9 Limitations of the Study
+    Several limitations should be acknowledged. First, and most significantly, the results
+reported in Chapter 4 represent a completed interface design and implementation rather than
+a live, multi-month clinical deployment; consequently, this discussion is necessarily based on
+design-level analysis and traceability to requirements rather than on measured operational
+outcomes such as actual mean-wait-time reduction, real patient-satisfaction scores, or validated
+model-accuracy figures obtained from live ECO data, all of which require the pilot deployment
+recommended in Section 5.10.
+
+    Second, the machine-learning prediction pipeline described in Section 3.8 was designed and,
+where hospital-record access allows, trained using a combination of retrospective historical data
+and literature-informed synthetic data (Section 3.6); until the model has been retrained and
+validated on a sufficiently large volume of real, multi-month ECO attendance data from the target
+hospital, its predictive accuracy in a live setting cannot be reported with confidence, and the
+reported approach should be understood as establishing a validated methodology rather than a
+field-tested predictive model.
+
+    Third, the study is scoped to a single hospital's ECO unit; while the underlying architecture is
+designed to be extensible (Section 3.5), the specific findings and design decisions discussed in
+this chapter may not generalise without modification to ECO units with substantially different
+patient volumes, staffing levels, or infrastructure, nor to other diagnostic-imaging services
+without further requirements analysis specific to that service. Fourth, the patient-facing
+application assumes smartphone access and a baseline level of digital literacy, which, as noted
+in Section 5.3, is not universal among the Sri Lankan public-hospital patient population, meaning
+that a meaningful subset of patients may not be able to use the mobile application without staff
+assistance or an alternative access channel. Finally, formal, statistically powered usability
+evaluation (System Usability Scale scoring and user-acceptance testing, as described in Section
+3.9) had not been completed for the full set of twenty screens at the time of this interim
+submission, and the usability-related claims made in Sections 5.3 to 5.5 should therefore be read
+as design-rationale claims grounded in the literature and requirements traceability, rather than
+as empirically validated usability findings.
+
+
+5.10 Recommendations for Future Work
+    Building on the limitations identified above, five directions for future work are
+recommended. First, a time-bound pilot deployment of the system within a single ECO unit,
+following the ethical-approval and data-governance procedures described in Section 3.10, should
+be conducted to collect the real operational and usability data needed to validate the design-
+level claims made in this chapter, including formal SUS-based usability scoring and user-
+acceptance testing across all three interfaces. Second, the machine-learning prediction model
+should be retrained and re-evaluated on real, multi-month ECO attendance data as it becomes
+available through the pilot, replacing or supplementing the literature-informed synthetic training
+data used during development (Section 3.6), and its accuracy should be benchmarked using the
+metrics identified in Section 3.8 (MAE, RMSE, R²) against real held-out data.
+
+    Third, the current staff-assigned priority tag in the Queue Management screen could be
+extended toward the adaptive, reinforcement-learning-based prioritisation approach
+demonstrated by [22], allowing the system to learn dynamic prioritisation policies from observed
+queue behaviour rather than relying solely on a static urgent/normal classification, which would
+more fully close research gap G2 identified in Table 5.1. Fourth, to address the smartphone-
+access limitation discussed in Section 5.9, an SMS or basic-mobile fallback channel, informed by
+the Doc990 model [7] and the SMS-alert component of OPD-PMMAS [2], is recommended as a
+complementary access route for patients without smartphones, so that the benefits of live queue
+visibility are not limited to smartphone owners. Fifth, once validated within the ECO unit, the
+underlying architecture (Section 3.5) should be evaluated for extension to other resource-
+constrained, equipment-bound diagnostic services within the same hospital, such as radiology
+or ultrasound, building on the precedent set by the ML-enhanced ultrasound-simulation study
+[21] and testing the generalisability limitation identified in Section 5.9 directly.
+
+
+5.11 Chapter Summary
+    This chapter has discussed the twenty implemented interface screens reported in Chapter
+4 in relation to the research problem established in Chapter 1, the literature and research gaps
+identified in Chapter 2, and the methodology described in Chapter 3. It examined the Patient
+Mobile Application, Staff Web Portal, and Administrator Web Portal in turn, showing that each
+addresses a distinct cluster of the operational problems originally identified, and it evaluated the
+extent to which the implemented system closes the five research gaps identified in Section 2.10,
+finding three gaps substantially addressed and two partially addressed pending further
+validation. A comparison with existing and related systems showed that the proposed system is,
+to the best of the evidence reviewed, the first to combine real-time in-hospital tracking, ML-
+based prediction, priority handling, and diagnostic-imaging specificity in a single design. The
+chapter also discussed the study's theoretical, practical, and methodological implications,
+acknowledged its limitations, most importantly that the reported results reflect a completed
+design and implementation rather than a validated live deployment, and set out five
+recommendations for future work, centred on a pilot deployment, real-data model retraining,
+adaptive prioritisation, a non-smartphone access channel, and extension to other diagnostic
+services. These findings, together with those of Chapters 1 through 4, form the basis for the
+overall conclusions of this thesis.
+
+
+
+
+5.10 Recommendations for Future Work
+
+Based on the limitations presented above, five possible directions of future work are proposed. Firstly, an
+implementation trial with a defined time span of the system within one ECO unit in accordance with the
+ethical approval and data governance protocol presented in Section 3.10 should be carried out to gather
+the real-life data on operational performance and usability needed to validate the claims made in this
+chapter at the design level, including the use of SUS scoring and user acceptance testing of all three
+interfaces. Secondly, the machine-learning prediction model should be retrained and reevaluated based
+on real, multi-month ECO attendance data provided through the implementation trial, either replacing or
+complementing the synthetic literature-informed training data used during development (Section 3.6),
+with the accuracy benchmarked in terms of MAE, RMSE and R² metrics, outlined in Section 3.8, against
+real held-out data.
+
+Thirdly, the current priority tag assigned by staff on the Queue Management screen could be expanded
+towards the adaptive reinforcement learning-based prioritisation policy demonstrated in [22], thus
+closing the research gap G2 identified in Table 5.1. Fourthly, in order to tackle the issue of limited
+smartphone access highlighted in Section 5.9, an SMS and basic mobile access channel, inspired by Doc990
+[7] and OPD-PMMAS [2] SMS alert module, is recommended as an alternative option for patients not
+owning smartphones, making the benefits of the live queue visibility accessible beyond the users of
+smartphones. Finally, after successful implementation within the ECO unit, the architecture of the system
+(Section 3.5) should be assessed for further extension to other diagnostic services in the hospital,
+constrained by similar resource and equipment limitations, namely radiology or ultrasound, with the
+example of ML-enhanced ultrasound simulation [21] setting the precedent.
+
+
+
+REFERENCES
+I've used IEEE numbered style, since that's the standard for CS/SE final-year theses in Sri Lankan
+universities — let me know if your department requires APA/Harvard instead and I'll reformat.
+
+References
+
+Sri Lanka–specific studies
+
+[1] P. A. D. Dilrukshi, H. D. I. M. Nirmanamali, G. H. J. Lanel, and M. A. S. C. Samarakoon, "A strategy to
+reduce the waiting time at the outpatient department of the National Hospital of Sri Lanka," International
+Journal of Scientific and Research Publications, vol. 6, no. 2, pp. 281–285, 2016.
+
+[2] M. A. C. Akmal Jahan, S. L. Rathnayake, M. Kalansuriya, and F. Subair, "OPD-PMMAS: Patient
+management and mobile alert system for OPDs in Sri Lankan hospitals — a prototype," in Proc. Int. Conf.
+on Science and Technology (ICST), South Eastern University of Sri Lanka, Jul. 2021.
+
+[3] "Modelling the patient flow in an Out-Patient Department (OPD) of a hospital using simulation
+techniques," ResearchGate, 2021.
+
+[4] "Performance analysis of human detection algorithms for OPDs in public hospitals," ResearchGate,
+2023.
+
+[5] "Nameboard detection and text recognition in OPDs of public hospitals," ResearchGate, 2023.
+
+[6] eChannelling PLC / ICTA Sri Lanka, "e-Channelling launches its digital OPD reservation service at district
+hospitals in Sri Lanka," Information and Communication Technology Agency of Sri Lanka, 2023.
+
+[7] GSMA Mobile for Development, "Doc990: Enhancing patient access to healthcare services in Sri Lanka
+through mobile," GSMA Case Study, 2018.
+
+[8] Ministry of Health, Nutrition and Indigenous Medicine, Sri Lanka, Sri Lanka Digital Health Blueprint,
+Health Information Unit, 2023.
+
+[9] Ministry of Health, Sri Lanka, National Digital Health Guidelines and Standards (NDHGS) v2.0, 2023.
+
+[10] Health Informatics Society of Sri Lanka (HISSL), Digital Health in Sri Lanka: Sustainable
+Implementation, 1998–2017 (covers HHIMS — Hospital Health Information Management System), 2017.
+
+Global machine-learning wait-time / queue prediction studies
+
+[11] X. Li et al., "Prediction of outpatient waiting time: using machine learning in a tertiary children's
+hospital," Translational Pediatrics, vol. 12, no. 11, pp. 2030–2043, 2023.
+
+[12] "Machine learning for prediction of wait times in outpatient clinic," Informatics in Medicine Unlocked
+(ScienceDirect), 2022.
+
+[13] "Machine learning for predicting patient wait times and appointment delays," ResearchGate preprint,
+2024.
+
+[14] "Dissatisfaction-considered waiting time prediction for outpatients with interpretable machine
+learning," PMC, 2024.
+[15] L. L. Guo, R. Tang, J. Y. Wang, and S. Zheng, "Machine learning-based prediction models for dynamic
+hospital queue management," JMIR Medical Informatics, vol. 13, no. 3, pp. 1–18, 2025.
+
+[16] "Predicting waiting times for medical tasks in a pediatric hospital using machine learning:
+comprehensive, retrospective, real-world study," JMIR Medical Informatics, 2025.
+
+[17] "Comparative analysis of machine learning algorithms for predicting consultation wait times in
+outpatient clinics," International Journal of Engineering Trends and Technology (IJETT), 2025.
+
+Queueing theory and simulation foundations
+
+[18] S. Fomundam and J. Herrmann, "A survey of queuing theory applications in healthcare," ISR Technical
+Report, no. 24, pp. 1–22, 2007.
+
+[19] "Enhancing the queuing management system in Malaysian public hospital," in Lecture Notes,
+Springer, 2022.
+
+[20] "Queueing theory and simulation for reducing patient waiting time in emergency departments"
+(Accumulative Priority Queue with Finite Horizon), ResearchGate, 2026.
+
+[21] "A high-fidelity, machine-learning enhanced queueing network simulation model for hospital
+ultrasound operations," arXiv:2104.07451, 2021.
+
+Priority queueing and AI-driven hospital queue management
+
+[22] "Optimization of hospital queue management using priority queue algorithm and reinforcement
+learning for emergency service prioritization," ResearchGate, 2024.
+
+[23] "MediQueue: An ML-driven hospital queue management system," Preprints.org, 2025.
+
+[24] K. Kavitha and S. Maragathasundari, "AI-enabled queuing theory applications for hospital patient
+flow optimization," 2025.
+
+IoT / mobile smart-queue systems
+
+[25] "A smart mobile system for the real-time tracking and management of service queues,"
+ResearchGate, 2016.
+
+Core machine-learning algorithms (methodological foundation)
+
+[26] L. Breiman, "Random forests," Machine Learning, vol. 45, no. 1, pp. 5–32, 2001.
+
+[27] T. Chen and C. Guestrin, "XGBoost: A scalable tree boosting system," in Proc. 22nd ACM SIGKDD Int.
+Conf. on Knowledge Discovery and Data Mining, 2016, pp. 785–794.
+
+Echocardiography-specific workflow studies
+
+[28] "Workflow optimization in echocardiography," US Cardiology Review / Radcliffe Cardiology, 2020.
+
+[29] J. S. Solis, F. Falahi, S. Garcia Casado, M. Rodriguez Martinez, and S. Salguero Bodes, "Optimizing
+echocardiography workflow to increase access to high quality care for patients," European Heart Journal
+– Cardiovascular Imaging, vol. 24, Suppl. 1, jead119.094, 2023.
+Demand forecasting for hospital resources
+
+[30] "Forecasting hospital resource demand using time series and machine learning models," Gulf Journal
+of Advance Business Research, vol. 3, no. 8, 2025.
+

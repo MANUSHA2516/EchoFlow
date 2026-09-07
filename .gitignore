@@ -1,0 +1,43 @@
+# Dependencies
+node_modules
+.pnpm-store
+**/.next
+**/dist
+**/build
+**/.turbo
+**/coverage
+**/.venv
+**/venv
+services/ml/.venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.mypy_cache
+
+# Env & secrets
+.env
+.env.local
+.env.*.local
+!**/.env.example
+
+# ML artefacts
+services/ml/artifacts/**
+!services/ml/artifacts/.gitkeep
+
+# IDE / OS
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Extracted PDF renders (large; regenerate with poppler if needed)
+docs/_extract/images/**
+
+# Misc
+*.tsbuildinfo
+next-env.d.ts

@@ -1,0 +1,536 @@
+     ECHO Unit Queue-Management System
+     Administrator Web Portal — Screen-by-Screen UI Documentation
+
+Prepared from the submitted mockup image, cross-checked against the Research Proposal
+                                (Chapters 1, 3 and 5)
+
+
+
+1. Introduction
+This document reviews the interface mockups supplied for the ECHO Unit queue-management
+system and matches each screen to the correct actor (Patient, Staff, or Administrator), a description
+of its purpose, and its concrete functions. The mockup image contains twelve distinct screens/states.
+Ten of these are clearly Administrator-side screens, consistent with the sidebar navigation labelled
+"ECHO Unit Admin" and the Super Admin account shown in the footer of most screens. However,
+two of the twelve screens are not admin-specific — they are the system's shared entry points used
+by all three actor types (Patient, Staff, and Administrator). These are flagged explicitly below so the
+documentation accurately reflects what was actually designed, rather than assuming every screen in
+the strip belongs to the admin portal.
+
+The Research Proposal (Section 1.5, Scope of the Study) states that the Administrator Web Portal
+consists of eight core screens: a Today's Unit Overview dashboard, a Room/Station Management
+grid, a Staff Accounts table, an Add-Staff-Member modal, an Audit Log, a Settings screen, a Register
+Station modal, and an Add Echo Room modal. The mockups largely match this list, but the
+implementation actually contains a few additional screens/states (an Admin sign-in screen, an
+Admin "My Profile" account screen with an edit-profile sub-view, a quick "Add Technician" modal,
+and a detailed staff "Access & Role" modal) that are not named individually in the proposal text.
+These additions and the minor naming differences are called out under "Notes / Corrections" in the
+relevant sections.
+
+
+
+2. Screen Inventory at a Glance
+ #   Screen                       Actor                        Proposal screen it fulfils
+
+ 1   Admin Sign-In                Administrator                Not individually named — required
+                                                               entry point
+
+ 2   Today's Unit Overview        Administrator                Today's Unit Overview dashboard
+     (Dashboard)
+
+ 3   Echo Rooms                   Administrator                Room/Station Management grid
+     (Room/Station grid)
+
+ 4   Staff Accounts               Administrator                Staff Accounts management table
+
+ 5   Staff Member — Access &      Administrator                Extends Add-Staff-Member modal
+#    Screen                      Actor                    Proposal screen it fulfils
+
+     Role modal
+
+6    Audit Log                   Administrator            Audit Log
+
+7    Settings                    Administrator            Settings screen
+
+8    Add Technician (quick-      Administrator            Variant of Add-Staff-Member modal
+     add modal)
+
+9    Add Echo Room modal         Administrator            Add Echo Room modal (also stands
+                                                          in for "Register Station")
+
+10   Add Staff Member modal      Administrator            Add-Staff-Member modal
+
+11   My Profile / Edit Profile   Administrator            Not named in proposal —
+                                                          supporting account screen
+
+12   Unified Sign-In (role       Patient / Staff /        Not admin-specific — shared login
+     selector)                   Administrator (shared)   gateway
+Screen 1: Admin Sign-In
+ Primary Actor                   Administrator
+
+
+
+
+                        Split-panel sign-in screen for the ECHO Unit Admin console.
+
+
+Purpose
+This is the dedicated authentication gate for the Administrator Web Portal. It restricts access to
+authorised hospital administrators before any dashboard, staff, or room data can be viewed,
+addressing the security and data-privacy requirements discussed in the Methodology chapter
+(Section 3.10) of the proposal.
+
+
+Key Functions & Interactions
+    ●   Left panel: brand/marketing copy — "Oversee every echo room, technician and AI-predicted
+        queue in one place" — communicating the scope of the admin console.
+    ●   Admin ID field for entering the administrator's staff identifier (e.g., ECHO-ADM-014).
+    ●   Password field (masked).
+    ●   Two-factor access code field (a 6-digit authenticator code), implementing the two-factor
+        authentication control referenced in the Settings screen and in Section 3.10 (ethical/security
+        considerations).
+    ●   "Sign in" call-to-action button that authenticates the administrator and routes to the
+        Dashboard (Screen 2).
+Correspondence to the Research Proposal
+The proposal does not list a login screen among the eight named admin screens, but it is a
+necessary precondition for all of them and directly implements the security/2FA requirement
+discussed in Section 3.10 and configured on the Settings screen.
+
+
+Notes / Corrections
+
+  Observed discrepancy
+  This screen is admin-only (it explicitly says "Sign in to ECHO Admin" and requires an Admin ID). It
+  should not be confused with Screen 12, a separate, shared "Welcome back" login screen with
+  Patient/Staff/Admin tabs found later in the same mockup strip. Two different sign-in designs
+  exist in the file — only one (this one) is exclusively for administrators.
+Screen 2: Today's Unit Overview (Dashboard)
+ Primary Actor                    Administrator
+
+
+
+
+       Admin dashboard — unit-wide KPIs, AI insight banner, room status, live queue, and system alerts.
+
+
+Purpose
+The administrator's landing page and 'control room' view. It gives unit-wide, real-time visibility of
+technicians, patient throughput, echo room status, and anything that needs administrative
+attention, directly answering the Chapter 1 problem of hospital management having 'no live visibility
+of queue length, station status, or daily patient volume.'
+
+
+Key Functions & Interactions
+   ●    Left sidebar navigation grouped into Overview (Dashboard, Echo rooms), Management (Staff
+        accounts, AI insights & reports, Audit log), and System (Settings), with the logged-in Super
+        Admin's name and a Log out link pinned at the bottom.
+   ●    KPI cards: active technicians, patients scanned today, echo rooms live, and AI prediction
+        accuracy (e.g., 92%).
+   ●    An AI insight banner (labelled with the ML model version, e.g. 'ECHO-ML v3.4.1') surfacing a
+        natural-language recommendation such as staffing an extra technician for a predicted
+        afternoon surge, with a 'View reasoning' link.
+   ●    Echo Room Status panel listing each room, its assigned technician, and a live indicator.
+    ●   A live queue snippet (queue number, wait time, status such as Live/Delayed, and a 'Manage'
+        link into that room's queue).
+    ●   System Alerts panel flagging issues needing admin attention, e.g. an SLA breach on the
+        Stress Echo Suite, or technician accounts pending approval.
+
+
+Correspondence to the Research Proposal
+This is the 'Today's Unit Overview dashboard combining unit-wide KPI cards, station status, and
+system alerts' described in Section 1.5 (Scope of the Study) as the first of the eight Administrator
+Web Portal screens.
+Screen 3: Echo Rooms (Room/Station Management Grid)
+ Primary Actor                   Administrator
+
+
+
+
+         Grid of echo rooms/stations with live queue, average wait, and technician-count indicators.
+
+
+Purpose
+Gives the administrator a unit-wide, room-by-room breakdown of physical capacity — the
+equipment- and staff-constrained resource that the proposal repeatedly identifies as the ECO unit's
+central bottleneck (Sections 1.1 and 2.7).
+
+
+Key Functions & Interactions
+   ●   A card per room/station (Echo Room 1, Echo Room 2, Stress Echo Suite, TEE Suite, Pediatric
+       Echo, Portable/Bedside Unit), each colour-coded and tagged with its floor/wing location.
+   ●   Per-room metrics: number of patients in queue, average wait time, and technician count,
+       plus a Live/Offline status pill.
+   ●   A progress/load bar visualising how close the room is to capacity.
+   ●   An 'Open room queue' link that drills into that specific room's live queue (handed off to staff-
+       side queue management).
+   ●   Implicit entry point to the 'Add Echo Room' modal (Screen 9) for registering a new
+       room/station.
+Correspondence to the Research Proposal
+This is the 'Room/Station Management grid,' the second of the eight Administrator Web Portal
+screens listed in Section 1.5.
+Screen 4: Staff Accounts
+ Primary Actor                  Administrator
+
+
+
+
+                          Searchable, filterable table of ECO unit staff accounts.
+
+
+Purpose
+Centralises staff-account governance for the ECO unit, replacing the informal, undocumented
+tracking of who is rostered where — addressing the staff-shortage/administrative-overload problem
+from a governance angle (Chapter 5, Section 5.5).
+
+
+Key Functions & Interactions
+   ●   Search bar to find staff 'by name or room'.
+   ●   Filter chips: All / Active / Pending / Suspended.
+   ●   Selectable rows (checkboxes) for bulk actions, plus per-row 'Edit' and an overflow (kebab)
+       menu for status actions.
+   ●   Columns for staff name, role tag (e.g., Technician, Room Lead), assigned room, account
+       status, and last-active timestamp.
+   ●   A pending-approval row surfaces new technician sign-ups (linked to the 'accounts pending
+       approval' alert on the Dashboard) with a 'Review' action.
+   ●   Entry point into the Add Staff Member modal (Screen 10) and the staff Access & Role modal
+       (Screen 5).
+Correspondence to the Research Proposal
+This is the 'Staff Accounts management table', the third of the eight Administrator Web Portal
+screens listed in Section 1.5.
+Screen 5: Staff Member — Access & Role Modal
+ Primary Actor                     Administrator
+
+
+
+
+ Three-step (Details / Access & role / Review) modal for editing a specific staff member's room assignment and
+                                                  permissions.
+
+
+Purpose
+A detailed, tabbed dialog opened from a row on the Staff Accounts screen (Screen 4). It lets an
+administrator review or change an individual staff member's room assignment and permission level,
+operationalising the role-based-access-control requirement discussed in Section 3.10.
+
+
+Key Functions & Interactions
+    ●   Step indicator across three stages: Details, Access & role, Review.
+    ●   Staff identity strip showing name, email, and phone, with an 'Edit' shortcut.
+    ●   Assigned Room selector — a 6-tile grid (Echo Room 1/2, Stress Echo, TEE Suite, Pediatric
+        Echo, Portable Unit) with the current room highlighted and its live queue count shown for
+        context.
+    ●   Role selector — Technician ('Runs and manages their own room queue') vs Room Lead
+        ('Everything a technician can do, plus manage staff for this room').
+   ●   A live-updating 'What [role] access includes' checklist (e.g. view own room queue, edit patient
+       records vs. add/remove staff, manage other echo rooms) so the admin can see the practical
+       effect of the role before saving.
+
+
+Correspondence to the Research Proposal
+This screen extends the 'Add-Staff-Member modal' named in Section 1.5 into a fuller staff-
+management dialog; the underlying role/permission model is the same one exposed system-wide
+on the Settings screen (Screen 7).
+
+
+Notes / Corrections
+
+  Observed discrepancy
+  The proposal's scope section names only one staff modal ('Add-Staff-Member modal'). The
+  mockups actually show two different staff dialogs: this detailed, tabbed Access & Role editor
+  (used to review/edit an existing staff member such as Amara Silva) and a separate, shorter
+  creation form (Screen 10). They should be read as two states of the same staff-management
+  flow — edit vs. create — rather than two unrelated screens.
+Screen 6: Audit Log
+ Primary Actor                   Administrator
+
+
+
+
+            Timestamped, user-attributed activity timeline with category and time-range filters.
+
+
+Purpose
+Provides an accountable, tamper-evident record of who did what and when across the system — the
+data-governance control explicitly called for in Section 3.10 (Ethical Considerations) to support
+accountability in a system that handles patient data under Sri Lanka's Personal Data Protection Act,
+No. 9 of 2022.
+
+
+Key Functions & Interactions
+   ●   Search bar to find a specific staff member or action.
+   ●   Category filter chips: All, Staff actions, Security, AI & system.
+   ●   A time-range selector (e.g. 'Last 24 hours').
+   ●   A chronological, timestamped timeline grouped by day ('Today'), each entry showing the
+       actor, the action taken (e.g. 'approved a staff account', 'updated room hours', 'marked a
+       patient scan done'), and the affected room/record.
+   ●   Status-coloured icons distinguishing successful actions from security events such as a failed
+       login attempt.
+Correspondence to the Research Proposal
+This is the 'Audit Log,' the fifth of the eight Administrator Web Portal screens listed in Section 1.5,
+and it is also referenced directly in Section 3.10 as recording 'a timestamped, user-attributed history
+of system actions for accountability.'
+Screen 7: Settings
+ Primary Actor                   Administrator
+
+
+
+
+         Role-permission matrix, account-security controls, and AI/prediction-engine configuration.
+
+
+Purpose
+The system-configuration hub for role-based access control, session/security policy, and the
+machine-learning prediction engine — again tying directly back to Section 3.10's requirement that
+access to patient data be restricted on a need-to-know basis according to staff role.
+
+
+Key Functions & Interactions
+   ●   A permissions matrix cross-referencing capabilities (view own room queue, edit patient
+       records, add/remove staff, manage other echo rooms, view audit log, change AI/system
+       settings) against the three roles (Technician, Room Lead, Super Admin).
+   ●   Security controls: Require two-factor authentication (toggle), Auto-lock inactive sessions (with
+       an idle timeout, e.g. 15 minutes), and Password-reset-link expiry (e.g. 15 minutes, single-use).
+   ●   An 'AI & prediction engine' panel showing the active ECHO-ML model version and last-
+       retrained time, with toggles for Enable AI queue prediction, Auto-retrain model weekly, and
+       Show predicted wait to patients.
+
+
+Correspondence to the Research Proposal
+This is the 'Settings screen for role-based permissions and security configuration,' the sixth of the
+eight Administrator Web Portal screens listed in Section 1.5, and its AI-engine controls correspond to
+the Machine Learning Prediction Service described in Section 3.5 (System Architecture).
+Screen 8: Add Technician (Quick-Add Modal)
+ Primary Actor                   Administrator
+
+
+
+
+                    Lightweight modal for quickly adding a technician to today's roster.
+
+
+Purpose
+A fast-path dialog for adding a technician to the day's roster on the spot (for example, to cover an
+unplanned absence flagged in a Dashboard alert), rather than the fuller onboarding flow in Screen
+10.
+
+
+Key Functions & Interactions
+   ●   Full Name and Email Address fields.
+   ●   Assigned Room dropdown (defaults to a specific room, e.g. Echo Room 1).
+   ●   Role toggle: Technician / Room Lead.
+   ●   Shift Start and Shift End time fields (e.g. Now → 4:00 PM), scoping the addition to a single
+       shift.
+   ●   'Send invite email now' toggle so the technician receives credentials immediately.
+
+
+Correspondence to the Research Proposal
+This is a same-day variant of the 'Add-Staff-Member modal' named in Section 1.5, oriented around
+shift coverage rather than permanent onboarding.
+
+
+Notes / Corrections
+
+  Observed discrepancy
+  This is a distinct, simpler dialog from the official Add Staff Member modal in Screen 10 (it adds
+  Shift Start/End fields and drops the Staff ID field). The two should not be treated as the same
+  screen — they represent two different creation flows (quick same-day add vs. formal account
+  creation).
+Screen 9: Add Echo Room Modal
+ Primary Actor                   Administrator
+
+
+
+
+        Form for registering a new echo room/station, with a live preview of the resulting room card.
+
+
+Purpose
+Lets an administrator register a new physical room or station and configure its operating
+parameters, directly supporting the resource-planning objective in Section 1.3.2 ('design and
+implement administrator-level oversight tools, including station/room management...').
+
+
+Key Functions & Interactions
+   ●   Room Name text field (e.g. 'Echo Room 3').
+   ●   Room Type selector: Standard Echo, Stress Echo, TEE, Pediatric, or Portable.
+   ●   Location/Wing text field (e.g. 'Level 2, Wing B').
+   ●   Operating Hours start/end time fields (e.g. 8:00 AM – 4:00 PM).
+   ●   Lead Technician dropdown to assign an initial technician.
+   ●   'Make room live immediately' toggle.
+   ●   A live Preview panel on the right showing exactly how the new room card will appear on the
+       Echo Rooms grid (Screen 3) before it is saved.
+Correspondence to the Research Proposal
+This is the 'Add Echo Room modal,' the eighth of the eight Administrator Web Portal screens listed in
+Section 1.5.
+
+
+Notes / Corrections
+
+  Observed discrepancy
+  Section 1.5 lists a 'Register Station modal' and an 'Add Echo Room modal' as two separate
+  screens. Only one room/station-creation modal appears in the mockups, and its Room Type
+  options (Standard Echo, Stress Echo, TEE, Pediatric, Portable) cover both diagnostic rooms and
+  general stations in a single form. In the documentation and any future write-up, this should be
+  described as one combined 'Add Echo Room / Register Station' modal rather than two separate
+  implemented screens, since no second, distinct 'Register Station' form exists in the provided
+  mockups.
+Screen 10: Add Staff Member Modal
+ Primary Actor                  Administrator
+
+
+
+
+                 Formal staff-onboarding modal, opened from the Staff Accounts screen.
+
+
+Purpose
+The formal path for onboarding a new permanent staff account into the ECO unit, as opposed to the
+same-day 'Add Technician' shortcut in Screen 8.
+
+
+Key Functions & Interactions
+   ●   Full Name and auto-generated Staff ID fields.
+   ●   Email Address field (used for the invitation).
+   ●   Assigned Room and Role dropdowns.
+   ●   Cancel button to dismiss without saving.
+   ●   'Send invite & create' primary action, which creates the account and emails the new staff
+       member their sign-in credentials.
+
+
+Correspondence to the Research Proposal
+This is the formal implementation of the 'Add-Staff-Member modal,' the fourth of the eight
+Administrator Web Portal screens listed in Section 1.5.
+Screen 11a: My Profile (Admin Account Overview)
+ Primary Actor                  Administrator
+
+
+
+
+            The logged-in administrator's own account summary, statistics, and recent activity.
+
+
+Purpose
+Gives the Super Admin a personal account summary and quick self-service access to their own
+security settings, separate from the unit-wide Dashboard (Screen 2).
+
+
+Key Functions & Interactions
+   ●   Profile banner showing membership date and last login time.
+   ●   Personal stat cards: rooms overseen, staff managed, approvals this week, and member-since
+       year.
+   ●   A 'Recent activity' feed of the admin's own actions (e.g. approved a staff account, updated
+       room hours, suspended a staff account, changed AI prediction settings).
+   ●   A contact/details card (phone, date of birth, hospital location).
+   ●   A Security card exposing two-factor-auth status, a 'Change' password link, 'Manage' active
+       sessions, and a 'Log out of this account' action.
+
+
+Correspondence to the Research Proposal
+Not individually named in Section 1.5's list of eight admin screens, but it is a normal supporting
+screen for any authenticated web portal and reuses the same security controls (2FA, sessions)
+described in Section 3.10.
+
+
+Notes / Corrections
+
+  Observed discrepancy
+  This screen is not one of the eight screens explicitly scoped in the proposal. It should be
+  documented as an additional, supporting Administrator screen rather than mapped onto any of
+  the eight named ones.
+Screen 11b: Edit Profile
+ Primary Actor                  Administrator
+
+
+
+
+              Editable personal-information and work-details form, reached from My Profile.
+
+
+Purpose
+Lets the administrator update their own personal contact details, while keeping system-managed
+fields (role, access level, department) locked for integrity.
+
+
+Key Functions & Interactions
+   ●   Editable Personal Information: full name, email address, phone, date of birth.
+   ●   Work Details section: Staff ID and Department fields (both locked, labelled 'Managed by
+       system — not editable'), plus Role (e.g. Super Admin) and Access Level (e.g. All echo rooms),
+       also locked.
+   ●   Save/Cancel actions in the header (implied by the button pair shown above the form).
+
+
+Correspondence to the Research Proposal
+Companion screen to My Profile (11a); not separately named in Section 1.5.
+
+
+Notes / Corrections
+Observed discrepancy
+As with 11a, this is an additional screen beyond the eight explicitly scoped in the proposal and
+should be documented as a supporting account-management screen rather than forced into
+one of the eight named categories.
+Screen 12: Unified Sign-In (Role Selector)
+ Primary Actor                   Shared — Patient, Staff, and Administrator
+
+
+
+
+              System-wide 'Welcome back' sign-in screen with Patient / Staff / Admin role tabs.
+
+
+Purpose
+This is the single, shared entry point for the entire ECHO system described in Section 3.5 (System
+Architecture): 'three separate client applications are provided for the three user roles ... all three
+clients communicate with a shared backend server.' Rather than being an admin-only screen, it is
+the front door that routes a person into whichever of the three portals matches their selected role.
+
+
+Key Functions & Interactions
+    ●   A left-hand hero panel ('One secure door for every role on the way...') explaining that
+        patients, sonographers, cardiologists, and unit admins all sign in through the same verified
+        gateway, with access scoped the moment they log in, plus trust indicators (role types
+        supported, 256-bit encryption, 24/7 uptime).
+    ●   A role selector with three tabs: Patient, Staff, and Admin — the screenshot captures the
+        Patient tab active by default.
+    ●   NIC Number and Phone Number fields used for patient sign-in/verification (fields would
+        differ for the Staff and Admin tabs, e.g. staff ID / admin ID and password, as seen in Screen
+        1).
+   ●    'Remember this device' checkbox and a 'Trouble signing in?' recovery link.
+   ●    A 'Continue' call-to-action, and a prompt for new patients to register with their NIC in one
+        step.
+
+
+Correspondence to the Research Proposal
+This screen is not part of the Administrator Web Portal's eight scoped screens; it corresponds
+instead to the shared authentication layer of the overall system architecture in Section 3.5, and to
+the patient-registration process referenced for the Patient Mobile Application in Section 1.5.
+
+
+Notes / Corrections
+
+  Observed discrepancy
+  This is the single most important correction to the original 'all screens are admin' assumption:
+  this screen is explicitly multi-role (it has Patient / Staff / Admin tabs and defaults to Patient), so it
+  must not be classified as an Administrator screen. It should be documented separately as the
+  shared system-login/gateway screen, distinct from the dedicated Admin Sign-In screen (Screen
+  1).
+3. Summary of Corrections Made to the Original Framing
+  ●   Not all twelve screens in the mockup strip are Administrator screens. Screen 12 ('Welcome
+      back', with Patient/Staff/Admin tabs) is a shared, role-selecting login gateway used by all
+      three portals, not an admin-only screen.
+  ●   There are two different sign-in designs in the file: a dedicated Admin Sign-In (Screen 1,
+      admin ID + password + 2FA code) and the shared, tabbed role-selector login (Screen 12).
+      These should be documented as two separate screens, not duplicates of each other.
+  ●   The proposal's Section 1.5 names a 'Register Station modal' and an 'Add Echo Room modal'
+      as two separate screens, but the mockups only contain one room/station-creation modal
+      (Screen 9), whose Room Type field already covers standard, stress, TEE, pediatric, and
+      portable configurations. This should be reported as a single combined modal, not two
+      distinct implemented screens.
+  ●   The single 'Add-Staff-Member modal' named in the proposal is, in the mockups, actually
+      three related but distinct dialogs: a formal creation form (Screen 10), a same-day quick-add
+      shortcut (Screen 8), and a fuller Access & Role editor for existing staff (Screen 5). All three
+      should be documented individually rather than collapsed into one screen.
+  ●   Two supporting account screens — My Profile (11a) and Edit Profile (11b) — exist in the
+      mockups but are not named among the eight core Administrator Web Portal screens in
+      Section 1.5. They should be reported as additional screens rather than omitted or mis-
+      mapped onto one of the eight.
+

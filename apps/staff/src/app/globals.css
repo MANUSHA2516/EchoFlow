@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --echo-teal: #0d9488;
+  --echo-navy: #0f172a;
+  --echo-surface: #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--echo-navy);
+  background: var(--echo-surface);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a {
+  transition-duration: 150ms;
+}
+
+::selection {
+  color: #ffffff;
+  background: #0f766e;
+}
+
+@media print {
+  aside,
+  header,
+  button {
+    display: none !important;
+  }
+
+  main {
+    max-width: none !important;
+    padding: 0 !important;
+  }
+}

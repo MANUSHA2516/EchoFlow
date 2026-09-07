@@ -1,0 +1,33 @@
+export const colors = {
+  teal: '#0D9488',
+  tealDark: '#0F766E',
+  tealDeep: '#115E59',
+  cyan: '#06B6D4',
+  blue: '#0284C7',
+  blueSoft: '#E0F2FE',
+  navy: '#0F172A',
+  slate: '#64748B',
+  slateSoft: '#94A3B8',
+  border: '#E2E8F0',
+  surface: '#F8FAFC',
+  white: '#FFFFFF',
+  amber: '#F59E0B',
+  amberSoft: '#FEF3C7',
+  amberDeep: '#D97706',
+  green: '#10B981',
+  greenSoft: '#D1FAE5',
+  mint: '#ECFDF5',
+  red: '#EF4444',
+  redSoft: '#FEE2E2',
+  peach: '#FFF7ED',
+  overlay: 'rgba(15, 23, 42, 0.45)',
+} as const;
+
+export const gradients = {
+  authButton: ['#0EA5E9', '#14B8A6'] as const,
+  journeyButton: ['#14B8A6', '#0284C7'] as const,
+  header: ['#0D9488', '#0284C7'] as const,
+  ticket: ['#0F766E', '#0369A1'] as const,
+  wait: ['#F59E0B', '#F97316'] as const,
+  avatar: ['#14B8A6', '#0EA5E9'] as const,
+};
