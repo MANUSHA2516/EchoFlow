@@ -1,6 +1,5 @@
 import type { Config } from 'tailwindcss';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const echoPreset = require('@echoflow/config/tailwind');
+import echoPreset from '@echoflow/config/tailwind';
 
 const config: Config = {
   content: [

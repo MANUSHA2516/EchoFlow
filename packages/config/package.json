@@ -9,7 +9,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./tailwind": "./tailwind-preset.js"
+    "./tailwind": {
+      "types": "./tailwind-preset.d.ts",
+      "default": "./tailwind-preset.js"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
