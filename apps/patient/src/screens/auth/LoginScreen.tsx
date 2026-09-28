@@ -15,8 +15,8 @@ type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
 export function LoginScreen({ navigation }: Props) {
   const { login, busy, error, clearError } = usePatient();
-  const [nic, setNic] = useState('200012345678');
-  const [phone, setPhone] = useState('712345678');
+  const [nic, setNic] = useState('');
+  const [phone, setPhone] = useState('');
 
   return (
     <AuthShell badge="SECURE LOGIN">

@@ -85,6 +85,7 @@ function MainTabs() {
         tabBarInactiveTintColor: colors.slateSoft,
         tabBarStyle: {
           borderTopColor: colors.border,
+          backgroundColor: colors.white,
           height: 64,
           paddingBottom: 8,
           paddingTop: 8,
@@ -105,7 +106,7 @@ function MainTabs() {
           return (
             <View
               style={{
-                backgroundColor: focused ? '#CCFBF1' : 'transparent',
+                backgroundColor: focused ? colors.blueSoft : 'transparent',
                 paddingHorizontal: 12,
                 paddingVertical: 6,
                 borderRadius: 12,

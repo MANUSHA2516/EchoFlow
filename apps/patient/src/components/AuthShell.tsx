@@ -7,9 +7,10 @@ import {
   Text,
   View,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Activity, Globe } from 'lucide-react-native';
-import { colors } from '../theme/colors';
+import { colors, gradients } from '../theme/colors';
 import { radii, spacing } from '../theme/spacing';
 import { StatusBadge } from './StatusBadge';
 import { EcgWave } from './EcgWave';
@@ -36,8 +37,6 @@ export function AuthShell({
 }: Props) {
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-      <View style={styles.blobTop} />
-      <View style={styles.blobBottom} />
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -54,9 +53,9 @@ export function AuthShell({
 
           {showBrand ? (
             <View style={styles.brand}>
-              <View style={styles.logo}>
-                <Activity color={colors.tealDeep} size={26} strokeWidth={2.4} />
-              </View>
+              <LinearGradient colors={[...gradients.avatar]} style={styles.logo}>
+                <Activity color={colors.white} size={25} strokeWidth={2.4} />
+              </LinearGradient>
               <Text style={styles.hospital}>{config.hospitalName}</Text>
               <Text style={styles.portal}>
                 {(brandSubtitle ?? config.unitLabel).toUpperCase()}
@@ -100,33 +99,13 @@ export function AuthShell({
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: colors.surface,
   },
   flex: { flex: 1 },
   content: {
     paddingHorizontal: spacing.xl,
     paddingBottom: spacing.xxxl,
     gap: spacing.lg,
-  },
-  blobTop: {
-    position: 'absolute',
-    top: -90,
-    right: -70,
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    backgroundColor: '#DBEAFE',
-    opacity: 0.75,
-  },
-  blobBottom: {
-    position: 'absolute',
-    bottom: -70,
-    left: -90,
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: '#CCFBF1',
-    opacity: 0.6,
   },
   topRow: {
     marginTop: spacing.sm,
@@ -149,14 +128,12 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   logo: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#ECFEFF',
-    borderWidth: 2,
-    borderColor: '#99F6E4',
+    width: 58,
+    height: 58,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
   hospital: {
     fontSize: 26,

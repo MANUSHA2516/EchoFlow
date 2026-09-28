@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     borderColor: colors.blue,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#EFF6FF',
+    backgroundColor: colors.blueSoft,
   },
   circleValue: {
     fontSize: 28,
@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.mint,
     borderRadius: radii.lg,
     borderWidth: 1,
-    borderColor: '#99F6E4',
+    borderColor: '#B9DFE8',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
     gap: spacing.md,
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
   },
   itemYou: {
-    backgroundColor: colors.mint,
+    backgroundColor: colors.blueSoft,
     borderWidth: 1.5,
     borderColor: colors.teal,
   },

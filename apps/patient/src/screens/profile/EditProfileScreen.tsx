@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as ImagePicker from 'expo-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import {
   Calendar,
@@ -34,6 +35,21 @@ export function EditProfileScreen({ navigation }: Props) {
     patient ? formatDobInput(patient.dateOfBirth) : '',
   );
   const [address, setAddress] = useState(patient?.address ?? '');
+  const [photoUri, setPhotoUri] = useState(patient?.avatarUrl);
+
+  const choosePhoto = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.85,
+      });
+      if (!result.canceled) setPhotoUri(result.assets[0].uri);
+    } catch {
+      Alert.alert('Photo unavailable', 'Please try choosing a photo again.');
+    }
+  };
 
   if (!patient) {
     return (
@@ -47,14 +63,24 @@ export function EditProfileScreen({ navigation }: Props) {
     <Screen>
       <ScreenHeader title="Edit profile" onBack={() => navigation.goBack()} />
 
-      <View style={styles.avatarWrap}>
-        <LinearGradient colors={[...gradients.avatar]} style={styles.avatar}>
-          <Text style={styles.avatarText}>{initials(fullName || patient.fullName)}</Text>
-        </LinearGradient>
-        <View style={styles.camera}>
+      <Pressable style={styles.avatarWrap} onPress={choosePhoto} accessibilityRole="button" accessibilityLabel="Choose profile photo">
+        {photoUri ? (
+          <Image source={{ uri: photoUri }} style={styles.avatar} />
+        ) : (
+          <LinearGradient colors={[...gradients.avatar]} style={styles.avatar}>
+            <Text style={styles.avatarText}>{initials(fullName || patient.fullName)}</Text>
+          </LinearGradient>
+        )}
+        <View style={styles.camera} pointerEvents="none">
           <Camera size={14} color={colors.white} />
         </View>
-      </View>
+        <Text style={styles.photoHint}>Change photo</Text>
+      </Pressable>
+      {photoUri ? (
+        <Pressable onPress={() => setPhotoUri(undefined)} accessibilityRole="button">
+          <Text style={styles.removePhoto}>Remove photo</Text>
+        </Pressable>
+      ) : null}
 
       <TextField
         label="Full name"
@@ -114,6 +140,7 @@ export function EditProfileScreen({ navigation }: Props) {
               fullName: fullName.trim(),
               dateOfBirth: iso,
               address: address.trim(),
+              avatarUrl: photoUri ?? '',
             });
             navigation.goBack();
           } catch {
@@ -134,13 +161,16 @@ const styles = StyleSheet.create({
   avatarWrap: {
     alignSelf: 'center',
     marginVertical: spacing.sm,
+    alignItems: 'center',
   },
   avatar: {
-    width: 96,
-    height: 96,
-    borderRadius: 32,
+    width: 92,
+    height: 92,
+    borderRadius: 46,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 3,
+    borderColor: colors.white,
   },
   avatarText: {
     color: colors.white,
@@ -149,8 +179,8 @@ const styles = StyleSheet.create({
   },
   camera: {
     position: 'absolute',
-    right: -2,
-    bottom: -2,
+    right: 3,
+    top: 63,
     width: 30,
     height: 30,
     borderRadius: 15,
@@ -159,5 +189,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: colors.white,
+  },
+  photoHint: {
+    marginTop: spacing.sm,
+    color: colors.blue,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  removePhoto: {
+    alignSelf: 'center',
+    marginBottom: spacing.sm,
+    color: colors.red,
+    fontSize: 12,
+    fontWeight: '700',
   },
 });

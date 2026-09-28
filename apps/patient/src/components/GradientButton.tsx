@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   secondary: {
     backgroundColor: colors.white,
     borderWidth: 1.5,
-    borderColor: colors.teal,
+    borderColor: colors.blue,
   },
   secondaryLabel: {
     color: colors.tealDeep,
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   ghostLabel: {
-    color: colors.slate,
+    color: colors.blue,
     fontWeight: '600',
   },
   disabled: {

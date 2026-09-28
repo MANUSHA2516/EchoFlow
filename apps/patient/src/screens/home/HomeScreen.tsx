@@ -100,6 +100,7 @@ export function HomeScreen({ navigation }: Props) {
             ))}
             <Text style={styles.ofTotal}>of {queue.totalInQueue}</Text>
           </View>
+    borderColor: '#B9DFE8',
         </Card>
 
         <GradientButton
@@ -318,7 +319,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.mint,
     borderRadius: radii.lg,
     borderWidth: 1,
-    borderColor: '#A7F3D0',
+    borderColor: '#B9DFE8',
     padding: spacing.lg,
     gap: spacing.md,
   },

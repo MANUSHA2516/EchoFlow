@@ -267,7 +267,7 @@ export const liveApi = {
     return 0;
   },
   async updateProfile(
-    input: Partial<Pick<PatientProfile, 'fullName' | 'dateOfBirth' | 'address'>>,
+    input: Partial<Pick<PatientProfile, 'fullName' | 'dateOfBirth' | 'address' | 'avatarUrl'>>,
   ) {
     const raw = await request<Json>('/patients/me', {
       method: 'PATCH',

@@ -93,8 +93,8 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   cardUnread: {
-    backgroundColor: '#F0FDFA',
-    borderColor: '#99F6E4',
+    backgroundColor: colors.blueSoft,
+    borderColor: '#B9DFE8',
   },
   icon: {
     width: 40,

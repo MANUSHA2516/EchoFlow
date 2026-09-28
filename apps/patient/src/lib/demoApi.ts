@@ -430,7 +430,7 @@ export const demoApi = {
     return unreadCount();
   },
 
-  async updateProfile(input: Partial<Pick<PatientProfile, 'fullName' | 'dateOfBirth' | 'address'>>) {
+  async updateProfile(input: Partial<Pick<PatientProfile, 'fullName' | 'dateOfBirth' | 'address' | 'avatarUrl'>>) {
     await delay();
     assertSession();
     state.patient = { ...state.patient, ...input };

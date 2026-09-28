@@ -61,7 +61,7 @@ type PatientContextValue = {
   loadNotifications: () => Promise<void>;
   markNotificationsRead: () => Promise<void>;
   updateProfile: (
-    input: Partial<Pick<PatientProfile, 'fullName' | 'dateOfBirth' | 'address'>>,
+    input: Partial<Pick<PatientProfile, 'fullName' | 'dateOfBirth' | 'address' | 'avatarUrl'>>,
   ) => Promise<void>;
   requestPhoneChange: (newPhoneLocal: string) => Promise<void>;
   getCheckIn: () => Promise<{

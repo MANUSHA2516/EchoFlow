@@ -26,6 +26,16 @@ export function PhoneOtpScreen({ navigation }: Props) {
   const [seconds, setSeconds] = useState(30);
   const inputs = useRef<Array<TextInput | null>>([]);
 
+  const setDigit = (index: number, value: string) => {
+    const cleaned = value.replace(/\D/g, '').slice(0, 6 - index);
+    const next = [...digits];
+    cleaned.split('').forEach((digit, offset) => {
+      next[index + offset] = digit;
+    });
+    setDigits(next);
+    if (cleaned && index < 5) inputs.current[Math.min(index + cleaned.length, 5)]?.focus();
+  };
+
   useEffect(() => {
     if (!pendingOtp || pendingOtp.purpose !== 'phone_change') {
       navigation.replace('UpdatePhone');
@@ -63,12 +73,11 @@ export function PhoneOtpScreen({ navigation }: Props) {
               inputs.current[i] = el;
             }}
             value={d}
-            onChangeText={(value) => {
-              const cleaned = value.replace(/\D/g, '').slice(-1);
-              const next = [...digits];
-              next[i] = cleaned;
-              setDigits(next);
-              if (cleaned && i < 5) inputs.current[i + 1]?.focus();
+            onChangeText={(value) => setDigit(i, value)}
+            onKeyPress={({ nativeEvent }) => {
+              if (nativeEvent.key === 'Backspace' && !digits[i] && i > 0) {
+                inputs.current[i - 1]?.focus();
+              }
             }}
             keyboardType="number-pad"
             maxLength={1}

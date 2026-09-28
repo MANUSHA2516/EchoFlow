@@ -43,11 +43,13 @@ export function VerifyOtpScreen({ navigation }: Props) {
   const code = digits.join('');
 
   const setDigit = (index: number, value: string) => {
-    const cleaned = value.replace(/\D/g, '').slice(-1);
+    const cleaned = value.replace(/\D/g, '').slice(0, 6 - index);
     const next = [...digits];
-    next[index] = cleaned;
+    cleaned.split('').forEach((digit, offset) => {
+      next[index + offset] = digit;
+    });
     setDigits(next);
-    if (cleaned && index < 5) inputs.current[index + 1]?.focus();
+    if (cleaned && index < 5) inputs.current[Math.min(index + cleaned.length, 5)]?.focus();
   };
 
   return (
@@ -159,7 +161,7 @@ const styles = StyleSheet.create({
     borderRadius: 36,
     backgroundColor: colors.mint,
     borderWidth: 1,
-    borderColor: '#99F6E4',
+    borderColor: '#B9DFE8',
     alignItems: 'center',
     justifyContent: 'center',
   },

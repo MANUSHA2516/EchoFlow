@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -23,18 +23,30 @@ export function TextField({
   right,
   prefix,
   locked,
+  onFocus,
+  onBlur,
   style,
   ...rest
 }: Props) {
+  const [focused, setFocused] = useState(false);
   return (
     <View style={styles.wrap}>
       <Text style={styles.label}>{label}</Text>
-      <View style={[styles.field, locked && styles.locked]}>
+      <View style={[styles.field, locked && styles.locked, focused && styles.focused]}>
         {icon ? <View style={styles.icon}>{icon}</View> : null}
         {prefix ? <Text style={styles.prefix}>{prefix}</Text> : null}
         <TextInput
           placeholderTextColor={colors.slateSoft}
           editable={!locked && rest.editable !== false}
+          accessibilityLabel={label}
+          onFocus={(event) => {
+            setFocused(true);
+            onFocus?.(event);
+          }}
+          onBlur={(event) => {
+            setFocused(false);
+            onBlur?.(event);
+          }}
           style={[styles.input, style]}
           {...rest}
         />
@@ -68,6 +80,10 @@ const styles = StyleSheet.create({
   },
   locked: {
     backgroundColor: '#F1F5F9',
+  },
+  focused: {
+    borderColor: colors.blue,
+    backgroundColor: colors.white,
   },
   icon: {
     opacity: 0.85,

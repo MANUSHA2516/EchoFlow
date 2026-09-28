@@ -12,7 +12,7 @@ type Props = {
 
 const tones = {
   mint: { bg: colors.mint, fg: colors.tealDeep },
-  teal: { bg: '#CCFBF1', fg: colors.tealDeep },
+  teal: { bg: colors.blueSoft, fg: colors.tealDeep },
   amber: { bg: colors.amberSoft, fg: colors.amberDeep },
   green: { bg: colors.greenSoft, fg: '#047857' },
   blue: { bg: colors.blueSoft, fg: colors.blue },
