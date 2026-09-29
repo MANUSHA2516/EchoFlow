@@ -1,13 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Clock3 } from 'lucide-react-native';
 import { TIME_SLOT_LABELS, TimeSlot, VisitReason, VISIT_REASON_LABELS } from '@echoflow/types';
 import { ErrorText } from '../../components/ErrorText';
 import { GradientButton } from '../../components/GradientButton';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { TextField } from '../../components/TextField';
+import { QueueWaitForecast } from '../../components/QueueWaitForecast';
 import { usePatient } from '../../lib/PatientContext';
 import { colors } from '../../theme/colors';
 import { radii, spacing } from '../../theme/spacing';
@@ -24,11 +24,6 @@ export function JoinQueueScreen({ navigation }: Props) {
   const [slot, setSlot] = useState<TimeSlot>('09-11');
   const [notes, setNotes] = useState('');
   const [reasonOpen, setReasonOpen] = useState(false);
-
-  const estimate = useMemo(
-    () => dashboard?.slotWaitEstimates[slot] ?? 40,
-    [dashboard, slot],
-  );
 
   return (
     <Screen>
@@ -88,12 +83,7 @@ export function JoinQueueScreen({ navigation }: Props) {
         style={{ minHeight: 80, textAlignVertical: 'top' }}
       />
 
-      <View style={styles.estimate}>
-        <Clock3 size={18} color={colors.amberDeep} />
-        <Text style={styles.estimateText}>
-          Estimated wait for this slot: <Text style={styles.strong}>{estimate} minutes</Text>
-        </Text>
-      </View>
+      <QueueWaitForecast slot={slot} queueLength={dashboard?.queue.totalInQueue ?? 0} />
 
       <ErrorText message={error} />
 
@@ -178,22 +168,6 @@ const styles = StyleSheet.create({
   },
   chipTextActive: {
     color: colors.white,
-  },
-  estimate: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    backgroundColor: colors.amberSoft,
-    borderRadius: radii.md,
-    padding: spacing.md,
-  },
-  estimateText: {
-    flex: 1,
-    color: colors.amberDeep,
-    fontWeight: '600',
-  },
-  strong: {
-    fontWeight: '800',
   },
   note: {
     textAlign: 'center',

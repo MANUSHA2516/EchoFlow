@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Calendar, MapPin, Phone } from 'lucide-react-native';
 import { Card } from '../../components/Card';
+import { ErrorText } from '../../components/ErrorText';
 import { GradientButton } from '../../components/GradientButton';
 import { Screen } from '../../components/Screen';
 import { formatDob, formatPhoneDisplay, initials } from '../../lib/format';
@@ -14,7 +15,7 @@ import type { ProfileStackParamList } from '../../navigation/types';
 type Props = NativeStackScreenProps<ProfileStackParamList, 'ProfileHome'>;
 
 export function ProfileScreen({ navigation }: Props) {
-  const { dashboard, logout, busy } = usePatient();
+  const { dashboard, logout, busy, error } = usePatient();
   const patient = dashboard?.patient;
 
   if (!patient) {
@@ -55,6 +56,7 @@ export function ProfileScreen({ navigation }: Props) {
       </LinearGradient>
 
       <View style={styles.body}>
+        <ErrorText message={error} />
         <Card>
           <Detail
             icon={<Phone size={18} color={colors.teal} />}
@@ -83,7 +85,7 @@ export function ProfileScreen({ navigation }: Props) {
           variant="danger"
           label="Log out"
           loading={busy}
-          onPress={() => void logout()}
+          onPress={() => void logout().catch(() => undefined)}
         />
       </View>
     </Screen>

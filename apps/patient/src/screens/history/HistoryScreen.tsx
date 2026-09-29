@@ -1,8 +1,10 @@
-import { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { HeartPulse, Stethoscope, UserRound } from 'lucide-react-native';
 import { VisitReason, VisitStatus, VISIT_REASON_LABELS } from '@echoflow/types';
 import { Card } from '../../components/Card';
+import { ErrorText } from '../../components/ErrorText';
 import { GradientButton } from '../../components/GradientButton';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
@@ -21,23 +23,40 @@ function visitIcon(type: VisitReason) {
 }
 
 export function HistoryScreen() {
-  const { visits, loadVisits, busy, dashboard } = usePatient();
+  const { visits, loadVisits, error, dashboard } = usePatient();
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    void loadVisits();
-  }, [loadVisits]);
+  useFocusEffect(
+    useCallback(() => {
+      let mounted = true;
+      void loadVisits()
+        .catch(() => undefined)
+        .finally(() => {
+          if (mounted) setLoading(false);
+        });
+      return () => {
+        mounted = false;
+      };
+    }, [loadVisits]),
+  );
+
+  const refresh = async () => {
+    setLoading(true);
+    try {
+      await loadVisits();
+    } catch {
+      // The shared error state is rendered below.
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const completed = visits.filter((v) => v.status === VisitStatus.Completed).length;
   const archived = visits.filter((v) => v.status === VisitStatus.Archived).length;
   const total = dashboard?.patient.totalVisits ?? visits.length;
 
   return (
-    <Screen
-      refreshing={busy}
-      onRefresh={() => {
-        void loadVisits();
-      }}
-    >
+    <Screen refreshing={loading} onRefresh={() => void refresh()}>
       <StatusBadge label="ECHO UNIT RECORDS" tone="teal" />
       <ScreenHeader title="Visit history" subtitle="Past appointments at the ECO unit" />
 
@@ -55,6 +74,26 @@ export function HistoryScreen() {
           <Text style={styles.statLabel}>Archived</Text>
         </Card>
       </View>
+
+      <ErrorText message={error} />
+
+      {loading && visits.length === 0 ? (
+        <View style={styles.state}>
+          <ActivityIndicator color={colors.teal} />
+          <Text style={styles.stateText}>Loading visit history…</Text>
+        </View>
+      ) : null}
+
+      {!loading && error ? (
+        <GradientButton variant="secondary" label="Try again" onPress={() => void refresh()} />
+      ) : null}
+
+      {!loading && !error && visits.length === 0 ? (
+        <View style={styles.state}>
+          <Text style={styles.emptyTitle}>No visits recorded yet</Text>
+          <Text style={styles.stateText}>Your completed ECO visits will appear here.</Text>
+        </View>
+      ) : null}
 
       {visits.map((v) => (
         <View key={v.id} style={styles.visit}>
@@ -80,9 +119,7 @@ export function HistoryScreen() {
             <Text
               style={[
                 styles.pillText,
-                v.status === VisitStatus.Completed
-                  ? styles.pillTextDone
-                  : styles.pillTextArchived,
+                v.status === VisitStatus.Completed ? styles.pillTextDone : styles.pillTextArchived,
               ]}
             >
               {v.status === VisitStatus.Completed ? 'Completed' : 'Archived'}
@@ -90,13 +127,32 @@ export function HistoryScreen() {
           </View>
         </View>
       ))}
-
-      <GradientButton variant="ghost" label="View all visits ›" onPress={() => void loadVisits()} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  state: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    minHeight: 100,
+    padding: spacing.lg,
+    borderRadius: radii.lg,
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  emptyTitle: {
+    color: colors.navy,
+    fontWeight: '800',
+    fontSize: 15,
+  },
+  stateText: {
+    color: colors.slate,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
   stats: {
     flexDirection: 'row',
     gap: spacing.sm,

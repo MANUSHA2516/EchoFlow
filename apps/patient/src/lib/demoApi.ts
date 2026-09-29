@@ -12,6 +12,7 @@ import type {
   NotificationItem,
   OtpChallenge,
   PatientProfile,
+  QueueWaitEstimate,
   QueueSnapshot,
   VisitItem,
 } from '../types/patient';
@@ -358,11 +359,20 @@ export const demoApi = {
     return dashboard();
   },
 
-  async joinQueue(input: {
-    reason: VisitReason;
-    slot: TimeSlot;
-    notes?: string;
-  }) {
+  async estimateQueueWait(input: { slot: TimeSlot; queueLength: number }): Promise<QueueWaitEstimate> {
+    await delay(180);
+    const slotHour = Number(input.slot.slice(0, 2));
+    const peakAdjustment = [12, 13, 14].includes(slotHour) ? 8 : 0;
+    return {
+      minutes: Math.round(12 + input.queueLength * 4.5 + peakAdjustment),
+      modelVersion: 'ECHO-ML-demo-0.1',
+      confidence: 0.5,
+      dataProvenance: 'synthetic',
+      generatedAt: nowIso(),
+    };
+  },
+
+  async joinQueue(input: { reason: VisitReason; slot: TimeSlot; notes?: string }) {
     await delay();
     assertSession();
     if (state.queue.ticketNumber) {
@@ -424,13 +434,13 @@ export const demoApi = {
     await delay(100);
     assertSession();
     const stamp = nowIso();
-    state.notifications = state.notifications.map((n) =>
-      n.readAt ? n : { ...n, readAt: stamp },
-    );
+    state.notifications = state.notifications.map((n) => (n.readAt ? n : { ...n, readAt: stamp }));
     return unreadCount();
   },
 
-  async updateProfile(input: Partial<Pick<PatientProfile, 'fullName' | 'dateOfBirth' | 'address' | 'avatarUrl'>>) {
+  async updateProfile(
+    input: Partial<Pick<PatientProfile, 'fullName' | 'dateOfBirth' | 'address' | 'avatarUrl'>>,
+  ) {
     await delay();
     assertSession();
     state.patient = { ...state.patient, ...input };
@@ -456,6 +466,7 @@ export const demoApi = {
   async getCheckIn() {
     await delay();
     assertSession();
+    if (!state.queue.ticketNumber) throw new Error('Join today’s queue before checking in.');
     if (Date.now() > state.checkInExpiresAt) {
       state.checkInToken = `EF-CHK-${Date.now().toString(36).toUpperCase()}`;
       state.checkInExpiresAt = Date.now() + 5 * 60_000;

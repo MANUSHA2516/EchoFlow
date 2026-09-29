@@ -1,11 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MessageSquare } from 'lucide-react-native';
 import { AuthShell } from '../../components/AuthShell';
@@ -27,9 +21,12 @@ export function VerifyOtpScreen({ navigation }: Props) {
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const [seconds, setSeconds] = useState(30);
   const inputs = useRef<Array<TextInput | null>>([]);
+  const hadChallenge = useRef(Boolean(pendingOtp));
 
   useEffect(() => {
-    if (!pendingOtp) {
+    if (pendingOtp) {
+      hadChallenge.current = true;
+    } else if (!hadChallenge.current) {
       navigation.replace('Login');
     }
   }, [pendingOtp, navigation]);
@@ -64,9 +61,7 @@ export function VerifyOtpScreen({ navigation }: Props) {
           Code sent to {pendingOtp ? formatPhoneDisplay(pendingOtp.phoneE164) : '—'}
         </Text>
         <EcgWave width={260} height={32} />
-        {config.forceDemo ? (
-          <StatusBadge label={`Demo OTP ${demoOtp}`} tone="amber" />
-        ) : null}
+        {config.forceDemo ? <StatusBadge label={`Demo OTP ${demoOtp}`} tone="amber" /> : null}
       </View>
 
       <Text style={styles.codeLabel}>VERIFICATION CODE</Text>
@@ -95,9 +90,7 @@ export function VerifyOtpScreen({ navigation }: Props) {
       <Text style={styles.resend}>
         Didn’t get a code?{' '}
         {seconds > 0 ? (
-          <Text style={styles.countdown}>
-            Resend in 00:{String(seconds).padStart(2, '0')}
-          </Text>
+          <Text style={styles.countdown}>Resend in 00:{String(seconds).padStart(2, '0')}</Text>
         ) : (
           <Text
             style={styles.resendAction}
@@ -124,9 +117,6 @@ export function VerifyOtpScreen({ navigation }: Props) {
         onPress={async () => {
           try {
             const purpose = await verifyOtp(code);
-            if (purpose === 'login') {
-              return;
-            }
             navigation.replace('VerificationSuccess', { purpose });
           } catch {
             /* context */

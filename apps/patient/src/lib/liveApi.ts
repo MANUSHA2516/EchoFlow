@@ -5,6 +5,7 @@ import type {
   DashboardData,
   NotificationItem,
   PatientProfile,
+  QueueWaitEstimate,
   QueueSnapshot,
   TimelineItem,
   VisitItem,
@@ -240,6 +241,27 @@ export const liveApi = {
     await tokenStorage.clear();
   },
   getDashboard: buildDashboard,
+  async estimateQueueWait(input: { slot: TimeSlot; queueLength: number }): Promise<QueueWaitEstimate> {
+    const hourOfDay = Number(input.slot.slice(0, 2));
+    const result = await request<{
+      minutes: number;
+      modelVersion: string;
+      confidence: number | null;
+      dataProvenance: string;
+      generatedAt: string;
+    }>('/predictions/wait-time', {
+      method: 'POST',
+      body: JSON.stringify({
+        hourOfDay,
+        dayOfWeek: new Date().getDay(),
+        queueLength: input.queueLength,
+        priority: 'normal',
+        roomLoad: 0.5,
+        slot: input.slot,
+      }),
+    });
+    return result;
+  },
   async joinQueue(input: { reason: VisitReason; slot: TimeSlot; notes?: string }) {
     await request('/queue-tickets', {
       method: 'POST',

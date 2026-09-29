@@ -1,10 +1,15 @@
+import { useCallback, useRef, useState } from 'react';
 import { StyleSheet, Text, View, Pressable } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AlertTriangle, Check, QrCode, UserRound } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Card } from '../../components/Card';
+import { ErrorText } from '../../components/ErrorText';
 import { GradientButton } from '../../components/GradientButton';
 import { Screen } from '../../components/Screen';
+import { ScreenHeader } from '../../components/ScreenHeader';
+import { QueueWaitForecast } from '../../components/QueueWaitForecast';
 import { StatusBadge } from '../../components/StatusBadge';
 import { usePatient } from '../../lib/PatientContext';
 import { colors, gradients } from '../../theme/colors';
@@ -14,20 +19,45 @@ import type { QueueStackParamList } from '../../navigation/types';
 type Props = NativeStackScreenProps<QueueStackParamList, 'LiveQueue'>;
 
 export function LiveQueueScreen({ navigation }: Props) {
-  const { dashboard, refreshDashboard, busy } = usePatient();
+  const { dashboard, refreshDashboard, error } = usePatient();
+  const [refreshing, setRefreshing] = useState(false);
+  const inFlight = useRef(false);
   const queue = dashboard?.queue;
 
+  const refresh = useCallback(
+    async (showSpinner = true) => {
+      if (inFlight.current) return;
+      inFlight.current = true;
+      if (showSpinner) setRefreshing(true);
+      try {
+        await refreshDashboard();
+      } catch {
+        // Keep the last known queue visible and show the request error below.
+      } finally {
+        inFlight.current = false;
+        if (showSpinner) setRefreshing(false);
+      }
+    },
+    [refreshDashboard],
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      void refresh(false);
+      const timer = setInterval(() => void refresh(false), 15000);
+      return () => clearInterval(timer);
+    }, [refresh]),
+  );
+
   return (
-    <Screen
-      refreshing={busy}
-      onRefresh={() => {
-        void refreshDashboard();
-      }}
-    >
-      <View style={styles.header}>
-        <Text style={styles.title}>Live queue tracking</Text>
-        <StatusBadge label="• AI PREDICTING" tone="green" />
-      </View>
+    <Screen refreshing={refreshing} onRefresh={() => void refresh()}>
+      <ScreenHeader
+        title="Live queue tracking"
+        onBack={navigation.canGoBack() ? () => navigation.goBack() : undefined}
+        right={<StatusBadge label="LIVE" tone="green" />}
+      />
+
+      <ErrorText message={error} />
 
       {!queue?.ticketNumber ? (
         <>
@@ -59,20 +89,21 @@ export function LiveQueueScreen({ navigation }: Props) {
             </View>
           </Card>
 
+          {queue.slot ? (
+            <QueueWaitForecast slot={queue.slot} queueLength={queue.patientsAhead} />
+          ) : null}
+
           {queue.positionMovedAlert ? (
             <View style={styles.moved}>
               <AlertTriangle size={18} color={colors.amberDeep} />
               <Text style={styles.movedBody}>
-                Your position moved back. A patient checked in on-site (QR verified) and was
-                given priority.
+                Your position moved back. A patient checked in on-site (QR verified) and was given
+                priority.
               </Text>
             </View>
           ) : null}
 
-          <Pressable
-            style={styles.qrBar}
-            onPress={() => navigation.navigate('CheckInQr')}
-          >
+          <Pressable style={styles.qrBar} onPress={() => navigation.navigate('CheckInQr')}>
             <Text style={styles.qrBarText}>Checked in on-site? Show your QR</Text>
             <LinearGradient colors={[...gradients.journeyButton]} style={styles.qrChip}>
               <QrCode size={14} color={colors.white} />
@@ -131,16 +162,6 @@ export function LiveQueueScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    alignItems: 'center',
-    gap: spacing.sm,
-    marginTop: spacing.sm,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: colors.navy,
-  },
   empty: { color: colors.slate, textAlign: 'center' },
   summaryCard: {
     paddingVertical: spacing.xl,

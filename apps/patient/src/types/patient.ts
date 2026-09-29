@@ -8,6 +8,14 @@ import {
 
 export type AuthPurpose = 'login' | 'register' | 'phone_change';
 
+export interface QueueWaitEstimate {
+  minutes: number;
+  modelVersion: string;
+  confidence: number | null;
+  dataProvenance: string;
+  generatedAt: string;
+}
+
 export interface PatientProfile {
   id: string;
   fullName: string;

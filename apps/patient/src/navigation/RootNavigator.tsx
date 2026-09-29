@@ -2,12 +2,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import {
-  Clock3,
-  FolderOpen,
-  Home,
-  UserRound,
-} from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Clock3, FolderOpen, Home, UserRound } from 'lucide-react-native';
 import { usePatient } from '../lib/PatientContext';
 import { colors } from '../theme/colors';
 import type {
@@ -44,17 +40,14 @@ function AuthNavigator() {
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="Register" component={RegisterScreen} />
       <AuthStack.Screen name="VerifyOtp" component={VerifyOtpScreen} />
-      <AuthStack.Screen
-        name="VerificationSuccess"
-        component={VerificationSuccessScreen}
-      />
+      <AuthStack.Screen name="VerificationSuccess" component={VerificationSuccessScreen} />
     </AuthStack.Navigator>
   );
 }
 
 function QueueNavigator() {
   return (
-    <QueueStack.Navigator screenOptions={{ headerShown: false }}>
+    <QueueStack.Navigator initialRouteName="LiveQueue" screenOptions={{ headerShown: false }}>
       <QueueStack.Screen name="QueueHome" component={QueueHomeScreen} />
       <QueueStack.Screen name="JoinQueue" component={JoinQueueScreen} />
       <QueueStack.Screen name="LiveTicket" component={LiveTicketScreen} />
@@ -77,6 +70,7 @@ function ProfileNavigator() {
 }
 
 function MainTabs() {
+  const insets = useSafeAreaInsets();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -86,9 +80,9 @@ function MainTabs() {
         tabBarStyle: {
           borderTopColor: colors.border,
           backgroundColor: colors.white,
-          height: 64,
-          paddingBottom: 8,
-          paddingTop: 8,
+          height: 58 + insets.bottom,
+          paddingBottom: Math.max(6, insets.bottom),
+          paddingTop: 6,
         },
         tabBarLabelStyle: {
           fontSize: 11,
@@ -119,7 +113,13 @@ function MainTabs() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Queue" component={QueueNavigator} />
+      <Tab.Screen
+        name="Queue"
+        component={QueueNavigator}
+        listeners={({ navigation }) => ({
+          tabPress: () => navigation.navigate('Queue', { screen: 'LiveQueue' }),
+        })}
+      />
       <Tab.Screen name="History" component={HistoryScreen} />
       <Tab.Screen name="Profile" component={ProfileNavigator} />
     </Tab.Navigator>
@@ -138,9 +138,7 @@ export function RootNavigator() {
   }
 
   return (
-    <NavigationContainer>
-      {authenticated ? <MainTabs /> : <AuthNavigator />}
-    </NavigationContainer>
+    <NavigationContainer>{authenticated ? <MainTabs /> : <AuthNavigator />}</NavigationContainer>
   );
 }
 

@@ -1,10 +1,10 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
 
 export type AuthStackParamList = {
-  Login: undefined;
+  Login: { mode?: 'login' | 'register' } | undefined;
   Register: undefined;
   VerifyOtp: undefined;
-  VerificationSuccess: { purpose: 'register' | 'phone_change' };
+  VerificationSuccess: { purpose: 'login' | 'register' | 'phone_change' };
 };
 
 export type QueueStackParamList = {

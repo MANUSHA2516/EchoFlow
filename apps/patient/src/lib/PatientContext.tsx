@@ -4,6 +4,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import type { TimeSlot, VisitReason } from '@echoflow/types';
@@ -16,6 +17,7 @@ import type {
   DashboardData,
   NotificationItem,
   PatientProfile,
+  QueueWaitEstimate,
   VisitItem,
 } from '../types/patient';
 
@@ -48,14 +50,12 @@ type PatientContextValue = {
     dateOfBirth: string;
   }) => Promise<void>;
   verifyOtp: (code: string) => Promise<AuthPurpose>;
+  completeLogin: () => void;
   resendOtp: () => Promise<void>;
   logout: () => Promise<void>;
   refreshDashboard: () => Promise<void>;
-  joinQueue: (input: {
-    reason: VisitReason;
-    slot: TimeSlot;
-    notes?: string;
-  }) => Promise<void>;
+  estimateQueueWait: (input: { slot: TimeSlot; queueLength: number }) => Promise<QueueWaitEstimate>;
+  joinQueue: (input: { reason: VisitReason; slot: TimeSlot; notes?: string }) => Promise<void>;
   leaveQueue: () => Promise<void>;
   loadVisits: () => Promise<void>;
   loadNotifications: () => Promise<void>;
@@ -91,8 +91,10 @@ export function PatientProvider({ children }: { children: React.ReactNode }) {
   const [pendingOtp, setPendingOtp] = useState<PendingOtp | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const runningRequests = useRef(0);
 
   const run = useCallback(async <T,>(fn: () => Promise<T>): Promise<T> => {
+    runningRequests.current += 1;
     setBusy(true);
     setError(null);
     try {
@@ -102,7 +104,8 @@ export function PatientProvider({ children }: { children: React.ReactNode }) {
       setError(message);
       throw e;
     } finally {
-      setBusy(false);
+      runningRequests.current = Math.max(0, runningRequests.current - 1);
+      if (runningRequests.current === 0) setBusy(false);
     }
   }, []);
 
@@ -127,13 +130,11 @@ export function PatientProvider({ children }: { children: React.ReactNode }) {
         if (cancelled) return;
         setApi(active);
         setUsingDemo(demo);
-        const access = await tokenStorage.getAccess();
-        const data = await active.restoreSession(Boolean(access));
+        // Require an OTP-authenticated sign-in each time the app launches.
+        await active.restoreSession(false);
         if (cancelled) return;
-        if (data) {
-          setDashboard(data);
-          setAuthenticated(true);
-        }
+        setDashboard(null);
+        setAuthenticated(false);
       } finally {
         if (!cancelled) setBooting(false);
       }
@@ -142,6 +143,168 @@ export function PatientProvider({ children }: { children: React.ReactNode }) {
       cancelled = true;
     };
   }, []);
+
+  const login = useCallback(
+    async (nic: string, phoneLocal: string) => {
+      await run(async () => {
+        const res = await api.login(nic, phoneLocal);
+        setPendingOtp({ challengeId: res.challengeId, phoneE164: res.phoneE164, purpose: 'login' });
+      });
+    },
+    [api, run],
+  );
+
+  const register = useCallback(
+    async (input: { fullName: string; nic: string; phoneLocal: string; dateOfBirth: string }) => {
+      await run(async () => {
+        const res = await api.register(input);
+        setPendingOtp({
+          challengeId: res.challengeId,
+          phoneE164: res.phoneE164,
+          purpose: 'register',
+        });
+      });
+    },
+    [api, run],
+  );
+
+  const verifyOtp = useCallback(
+    async (code: string): Promise<AuthPurpose> =>
+      run(async () => {
+        if (!pendingOtp) throw new Error('No OTP challenge in progress');
+        const res = await api.verifyOtp(pendingOtp.challengeId, code);
+        if (res.purpose === 'register') {
+          setPendingOtp(null);
+          await tokenStorage.clear();
+          setError(null);
+          return 'register';
+        }
+        if (res.purpose === 'login') {
+          const data = await api.getDashboard();
+          setDashboard(data);
+        } else if (res.purpose === 'phone_change') {
+          setDashboard(await api.getDashboard());
+        }
+        setPendingOtp(null);
+        setError(null);
+        return res.purpose;
+      }),
+    [api, pendingOtp, run],
+  );
+
+  const completeLogin = useCallback(() => {
+    setAuthenticated(true);
+    setPendingOtp(null);
+  }, []);
+
+  const resendOtp = useCallback(
+    async () =>
+      run(async () => {
+        if (!pendingOtp) throw new Error('No OTP challenge in progress');
+        const res = await api.resendOtp(pendingOtp.challengeId);
+        if ('challengeId' in res && res.challengeId) {
+          setPendingOtp({ ...pendingOtp, challengeId: res.challengeId });
+        }
+      }),
+    [api, pendingOtp, run],
+  );
+
+  const logout = useCallback(
+    async () =>
+      run(async () => {
+        await api.logout();
+        await tokenStorage.clear();
+        setAuthenticated(false);
+        setDashboard(null);
+        setVisits([]);
+        setNotifications([]);
+      }),
+    [api, run],
+  );
+
+  const refreshDashboard = useCallback(
+    async () =>
+      run(async () => {
+        setDashboard(await api.getDashboard());
+      }),
+    [api, run],
+  );
+
+  const estimateQueueWait = useCallback(
+    (input: { slot: TimeSlot; queueLength: number }) => api.estimateQueueWait(input),
+    [api],
+  );
+
+  const joinQueue = useCallback(
+    async (input: { reason: VisitReason; slot: TimeSlot; notes?: string }) =>
+      run(async () => {
+        setDashboard(await api.joinQueue(input));
+      }),
+    [api, run],
+  );
+
+  const leaveQueue = useCallback(
+    async () =>
+      run(async () => {
+        setDashboard(await api.leaveQueue());
+      }),
+    [api, run],
+  );
+
+  const loadVisits = useCallback(
+    async () =>
+      run(async () => {
+        setVisits(await api.getVisits());
+      }),
+    [api, run],
+  );
+
+  const loadNotifications = useCallback(
+    async () =>
+      run(async () => {
+        setNotifications(await api.getNotifications());
+      }),
+    [api, run],
+  );
+
+  const markNotificationsRead = useCallback(
+    async () =>
+      run(async () => {
+        await api.markNotificationsRead();
+        setDashboard(await api.getDashboard());
+        setNotifications(await api.getNotifications());
+      }),
+    [api, run],
+  );
+
+  const updateProfile = useCallback(
+    async (
+      input: Partial<Pick<PatientProfile, 'fullName' | 'dateOfBirth' | 'address' | 'avatarUrl'>>,
+    ) =>
+      run(async () => {
+        await api.updateProfile(input);
+        setDashboard(await api.getDashboard());
+      }),
+    [api, run],
+  );
+
+  const requestPhoneChange = useCallback(
+    async (newPhoneLocal: string) =>
+      run(async () => {
+        const res = await api.requestPhoneChange(newPhoneLocal);
+        setPendingOtp({
+          challengeId: res.challengeId,
+          phoneE164: res.phoneE164 ?? '',
+          purpose: 'phone_change',
+        });
+      }),
+    [api, run],
+  );
+
+  const getCheckIn = useCallback(() => api.getCheckIn(), [api]);
+  const refreshCheckIn = useCallback(() => api.refreshCheckIn(), [api]);
+
+  const clearError = useCallback(() => setError(null), []);
 
   const value = useMemo<PatientContextValue>(
     () => ({
@@ -155,130 +318,27 @@ export function PatientProvider({ children }: { children: React.ReactNode }) {
       error,
       busy,
       demoOtp: demoApi.demoOtpHint(),
-      clearError: () => setError(null),
+      clearError,
       setPendingOtp,
-      login: async (nic, phoneLocal) => {
-        await run(async () => {
-          const res = await api.login(nic, phoneLocal);
-          setPendingOtp({
-            challengeId: res.challengeId,
-            phoneE164: res.phoneE164,
-            purpose: 'login',
-          });
-        });
-      },
-      register: async (input) => {
-        await run(async () => {
-          const res = await api.register(input);
-          setPendingOtp({
-            challengeId: res.challengeId,
-            phoneE164: res.phoneE164,
-            purpose: 'register',
-          });
-        });
-      },
-      verifyOtp: async (code) => {
-        return run(async () => {
-          if (!pendingOtp) throw new Error('No OTP challenge in progress');
-          if (api === liveApi) {
-            const res = await liveApi.verifyOtp(pendingOtp.challengeId, code);
-            setPendingOtp(null);
-            if (res.purpose === 'register') {
-              await tokenStorage.clear();
-              return 'register';
-            }
-            const data = await liveApi.getDashboard();
-            setDashboard(data);
-            setAuthenticated(true);
-            return res.purpose;
-          }
-          const res = await demoApi.verifyOtp(pendingOtp.challengeId, code);
-          setPendingOtp(null);
-          if (res.purpose === 'login' && res.tokens) {
-            await tokenStorage.save(res.tokens.accessToken, res.tokens.refreshToken);
-            const data = await demoApi.getDashboard();
-            setDashboard(data);
-            setAuthenticated(true);
-          }
-          if (res.purpose === 'phone_change') {
-            const data = await demoApi.getDashboard();
-            setDashboard(data);
-          }
-          return res.purpose;
-        });
-      },
-      resendOtp: async () => {
-        await run(async () => {
-          if (!pendingOtp) throw new Error('No OTP challenge in progress');
-          const res = await api.resendOtp(pendingOtp.challengeId);
-          if ('challengeId' in res && res.challengeId) {
-            setPendingOtp({ ...pendingOtp, challengeId: res.challengeId });
-          }
-        });
-      },
-      logout: async () => {
-        await run(async () => {
-          await api.logout();
-          await tokenStorage.clear();
-          setAuthenticated(false);
-          setDashboard(null);
-          setVisits([]);
-          setNotifications([]);
-        });
-      },
-      refreshDashboard: async () => {
-        await run(async () => {
-          setDashboard(await api.getDashboard());
-        });
-      },
-      joinQueue: async (input) => {
-        await run(async () => {
-          setDashboard(await api.joinQueue(input));
-        });
-      },
-      leaveQueue: async () => {
-        await run(async () => {
-          setDashboard(await api.leaveQueue());
-        });
-      },
-      loadVisits: async () => {
-        await run(async () => {
-          setVisits(await api.getVisits());
-        });
-      },
-      loadNotifications: async () => {
-        await run(async () => {
-          setNotifications(await api.getNotifications());
-        });
-      },
-      markNotificationsRead: async () => {
-        await run(async () => {
-          await api.markNotificationsRead();
-          setDashboard(await api.getDashboard());
-          setNotifications(await api.getNotifications());
-        });
-      },
-      updateProfile: async (input) => {
-        await run(async () => {
-          await api.updateProfile(input);
-          setDashboard(await api.getDashboard());
-        });
-      },
-      requestPhoneChange: async (newPhoneLocal) => {
-        await run(async () => {
-          const res = await api.requestPhoneChange(newPhoneLocal);
-          setPendingOtp({
-            challengeId: res.challengeId,
-            phoneE164: res.phoneE164 ?? '',
-            purpose: 'phone_change',
-          });
-        });
-      },
-      getCheckIn: () => api.getCheckIn(),
-      refreshCheckIn: () => api.refreshCheckIn(),
+      login,
+      register,
+      verifyOtp,
+      completeLogin,
+      resendOtp,
+      logout,
+      refreshDashboard,
+      estimateQueueWait,
+      joinQueue,
+      leaveQueue,
+      loadVisits,
+      loadNotifications,
+      markNotificationsRead,
+      updateProfile,
+      requestPhoneChange,
+      getCheckIn,
+      refreshCheckIn,
     }),
     [
-      api,
       authenticated,
       booting,
       busy,
@@ -286,9 +346,26 @@ export function PatientProvider({ children }: { children: React.ReactNode }) {
       error,
       notifications,
       pendingOtp,
-      run,
       usingDemo,
       visits,
+      clearError,
+      login,
+      register,
+      verifyOtp,
+      completeLogin,
+      resendOtp,
+      logout,
+      refreshDashboard,
+      estimateQueueWait,
+      joinQueue,
+      leaveQueue,
+      loadVisits,
+      loadNotifications,
+      markNotificationsRead,
+      updateProfile,
+      requestPhoneChange,
+      getCheckIn,
+      refreshCheckIn,
     ],
   );
 

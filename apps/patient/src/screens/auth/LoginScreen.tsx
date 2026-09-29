@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { CreditCard, Phone } from 'lucide-react-native';
+import { Calendar, CreditCard, Phone, User } from 'lucide-react-native';
 import { AuthShell } from '../../components/AuthShell';
 import { ErrorText } from '../../components/ErrorText';
 import { GradientButton } from '../../components/GradientButton';
@@ -13,34 +13,125 @@ import type { AuthStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
-export function LoginScreen({ navigation }: Props) {
-  const { login, busy, error, clearError } = usePatient();
+export function LoginScreen({ navigation, route }: Props) {
+  const { login, register, busy, error, clearError } = usePatient();
+  const [isRegistering, setIsRegistering] = useState(route.params?.mode === 'register');
+  const [fullName, setFullName] = useState('');
   const [nic, setNic] = useState('');
   const [phone, setPhone] = useState('');
+  const [dob, setDob] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
+
+  const switchMode = (registerMode: boolean) => {
+    setIsRegistering(registerMode);
+    setFormError(null);
+    clearError();
+  };
+
+  const submit = async () => {
+    setFormError(null);
+    const cleanNic = nic.trim().toUpperCase();
+    const phoneDigits = phone.replace(/\D/g, '');
+    const localPhone = phoneDigits.startsWith('94')
+      ? phoneDigits.slice(2)
+      : phoneDigits.startsWith('0')
+        ? phoneDigits.slice(1)
+        : phoneDigits;
+
+    if (!/^\d{12}$|^\d{9}[VX]$/.test(cleanNic)) {
+      setFormError('Enter a valid 12-digit NIC or 9-digit NIC ending in V or X.');
+      return;
+    }
+    if (!/^7\d{8}$/.test(localPhone)) {
+      setFormError('Enter a valid Sri Lankan mobile number.');
+      return;
+    }
+
+    try {
+      if (isRegistering) {
+        if (!fullName.trim()) {
+          setFormError('Enter your full name.');
+          return;
+        }
+        const parts = dob
+          .trim()
+          .split(/[/.\-\s]+/)
+          .filter(Boolean);
+        if (parts.length !== 3) {
+          setFormError('Enter your date of birth as DD / MM / YYYY.');
+          return;
+        }
+        const [day, month, year] = parts.map(Number);
+        const date = new Date(year, month - 1, day);
+        if (
+          !Number.isInteger(day) ||
+          !Number.isInteger(month) ||
+          !Number.isInteger(year) ||
+          year < 1900 ||
+          date.getFullYear() !== year ||
+          date.getMonth() !== month - 1 ||
+          date.getDate() !== day ||
+          date > new Date()
+        ) {
+          setFormError('Enter a real date of birth that is not in the future.');
+          return;
+        }
+        await register({
+          fullName: fullName.trim(),
+          nic: cleanNic,
+          phoneLocal: localPhone,
+          dateOfBirth: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+        });
+      } else {
+        await login(cleanNic, localPhone);
+      }
+      navigation.navigate('VerifyOtp');
+    } catch {
+      // The request error is shown in the form.
+    }
+  };
 
   return (
-    <AuthShell badge="SECURE LOGIN">
+    <AuthShell
+      badge={isRegistering ? 'NEW PATIENT' : 'SECURE LOGIN'}
+      badgeTone={isRegistering ? 'blue' : 'mint'}
+    >
       <View style={styles.tabs}>
-        <View style={[styles.tab, styles.tabActive]}>
-          <Text style={[styles.tabText, styles.tabTextActive]}>Log in</Text>
-        </View>
         <Pressable
-          style={styles.tab}
-          onPress={() => {
-            clearError();
-            navigation.navigate('Register');
-          }}
+          accessibilityRole="tab"
+          accessibilityState={{ selected: !isRegistering }}
+          style={[styles.tab, !isRegistering && styles.tabActive]}
+          onPress={() => switchMode(false)}
         >
-          <Text style={styles.tabText}>Register</Text>
+          <Text style={[styles.tabText, !isRegistering && styles.tabTextActive]}>Log in</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="tab"
+          accessibilityState={{ selected: isRegistering }}
+          style={[styles.tab, isRegistering && styles.tabActive]}
+          onPress={() => switchMode(true)}
+        >
+          <Text style={[styles.tabText, isRegistering && styles.tabTextActive]}>Register</Text>
         </Pressable>
       </View>
+
+      {isRegistering ? (
+        <TextField
+          label="Full Name"
+          value={fullName}
+          onChangeText={setFullName}
+          placeholder="Kasun Perera"
+          autoCapitalize="words"
+          icon={<User size={18} color={colors.slate} />}
+        />
+      ) : null}
 
       <TextField
         label="NIC Number"
         value={nic}
         onChangeText={setNic}
-        keyboardType="number-pad"
-        autoCapitalize="none"
+        keyboardType="default"
+        autoCapitalize="characters"
         placeholder="200012345678"
         icon={<CreditCard size={18} color={colors.slate} />}
       />
@@ -54,30 +145,32 @@ export function LoginScreen({ navigation }: Props) {
         icon={<Phone size={18} color={colors.slate} />}
       />
 
-      <ErrorText message={error} />
+      {isRegistering ? (
+        <TextField
+          label="Date of Birth"
+          value={dob}
+          onChangeText={setDob}
+          placeholder="DD / MM / YYYY"
+          keyboardType="numbers-and-punctuation"
+          icon={<Calendar size={18} color={colors.slate} />}
+        />
+      ) : null}
+
+      <ErrorText message={formError ?? error} />
 
       <GradientButton
-        label="Continue"
+        label={isRegistering ? 'Create account' : 'Continue'}
         loading={busy}
-        onPress={async () => {
-          try {
-            await login(nic.trim(), phone.trim());
-            navigation.navigate('VerifyOtp');
-          } catch {
-            /* surfaced via context */
-          }
-        }}
+        onPress={() => void submit()}
       />
 
-      <Pressable
-        onPress={() => {
-          clearError();
-          navigation.navigate('Register');
-        }}
-      >
+      <Pressable onPress={() => switchMode(!isRegistering)}>
         <Text style={styles.link}>
-          New patient? <Text style={styles.linkStrong}>Register with your NIC</Text> in one
-          step.
+          {isRegistering ? 'Already registered? ' : 'New patient? '}
+          <Text style={styles.linkStrong}>
+            {isRegistering ? 'Log in with your NIC' : 'Register with your NIC'}
+          </Text>
+          {isRegistering ? '' : ' in one step.'}
         </Text>
       </Pressable>
     </AuthShell>

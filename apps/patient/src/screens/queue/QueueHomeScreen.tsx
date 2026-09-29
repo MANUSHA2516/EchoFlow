@@ -1,6 +1,9 @@
+import { useCallback } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { GradientButton } from '../../components/GradientButton';
+import { ErrorText } from '../../components/ErrorText';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { usePatient } from '../../lib/PatientContext';
@@ -9,20 +12,24 @@ import type { QueueStackParamList } from '../../navigation/types';
 type Props = NativeStackScreenProps<QueueStackParamList, 'QueueHome'>;
 
 export function QueueHomeScreen({ navigation }: Props) {
-  const { dashboard } = usePatient();
+  const { dashboard, refreshDashboard, busy, error } = usePatient();
   const hasTicket = Boolean(dashboard?.queue.ticketNumber);
 
+  useFocusEffect(
+    useCallback(() => {
+      void refreshDashboard().catch(() => undefined);
+    }, [refreshDashboard]),
+  );
+
   return (
-    <Screen>
-      <ScreenHeader
-        title="Queue"
-        subtitle="Join, track, or leave today’s ECHO queue"
-      />
+    <Screen refreshing={busy} onRefresh={() => void refreshDashboard().catch(() => undefined)}>
+      <ScreenHeader title="Queue" subtitle="Join, track, or leave today’s ECHO queue" />
       <Text style={styles.lead}>
         {hasTicket
           ? `Active ticket ${dashboard?.queue.ticketNumber}. Live updates stay open while you wait.`
           : 'You are not in today’s queue yet. Join remotely and we will track your place.'}
       </Text>
+      <ErrorText message={error} />
       {hasTicket ? (
         <>
           <GradientButton

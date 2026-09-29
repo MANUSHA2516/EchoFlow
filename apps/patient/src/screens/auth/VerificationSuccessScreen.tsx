@@ -1,10 +1,11 @@
 import { StyleSheet, Text, View } from 'react-native';
+import { useEffect } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { CheckCircle2 } from 'lucide-react-native';
 import { AuthShell } from '../../components/AuthShell';
-import { GradientButton } from '../../components/GradientButton';
 import { config } from '../../lib/config';
 import { colors } from '../../theme/colors';
+import { usePatient } from '../../lib/PatientContext';
 import { spacing } from '../../theme/spacing';
 import type { AuthStackParamList } from '../../navigation/types';
 
@@ -12,6 +13,18 @@ type Props = NativeStackScreenProps<AuthStackParamList, 'VerificationSuccess'>;
 
 export function VerificationSuccessScreen({ navigation, route }: Props) {
   const { purpose } = route.params;
+  const { completeLogin } = usePatient();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (purpose === 'login') {
+        completeLogin();
+      } else {
+        navigation.reset({ index: 0, routes: [{ name: 'Login', params: { mode: 'login' } }] });
+      }
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [completeLogin, navigation, purpose]);
 
   return (
     <AuthShell badge="VERIFIED" badgeTone="green" showBrand={false}>
@@ -20,27 +33,18 @@ export function VerificationSuccessScreen({ navigation, route }: Props) {
           <CheckCircle2 color={colors.green} size={40} />
         </View>
         <Text style={styles.title}>Verification successful</Text>
-        <Text style={styles.sub}>
-          {config.hospitalName} · Echo Unit
-        </Text>
+        <Text style={styles.sub}>{config.hospitalName} · Echo Unit</Text>
         <Text style={styles.body}>
           Your phone number has been verified and your account is ready to use.
         </Text>
       </View>
 
-      <GradientButton
-        label="Back to login →"
-        onPress={() => navigation.navigate('Login')}
-      />
-
       {purpose === 'phone_change' ? (
-        <Text style={styles.note}>
-          Your notification and OTP number has been updated.
-        </Text>
+        <Text style={styles.note}>Your notification and OTP number has been updated.</Text>
+      ) : purpose === 'login' ? (
+        <Text style={styles.note}>Opening your patient dashboard…</Text>
       ) : (
-        <Text style={styles.note}>
-          Sign in with your NIC and verified phone to open the patient portal.
-        </Text>
+        <Text style={styles.note}>Returning to login…</Text>
       )}
     </AuthShell>
   );

@@ -3,9 +3,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Bell } from 'lucide-react-native';
 import { Card } from '../../components/Card';
+import { ErrorText } from '../../components/ErrorText';
 import { GradientButton } from '../../components/GradientButton';
 import { Screen } from '../../components/Screen';
 import { ScreenHeader } from '../../components/ScreenHeader';
+import { QueueWaitForecast } from '../../components/QueueWaitForecast';
 import { usePatient } from '../../lib/PatientContext';
 import { colors, gradients } from '../../theme/colors';
 import { radii, spacing } from '../../theme/spacing';
@@ -14,7 +16,7 @@ import type { QueueStackParamList } from '../../navigation/types';
 type Props = NativeStackScreenProps<QueueStackParamList, 'LiveTicket'>;
 
 export function LiveTicketScreen({ navigation }: Props) {
-  const { dashboard, leaveQueue, busy } = usePatient();
+  const { dashboard, leaveQueue, busy, error } = usePatient();
   const queue = dashboard?.queue;
 
   if (!queue?.ticketNumber) {
@@ -50,11 +52,13 @@ export function LiveTicketScreen({ navigation }: Props) {
         </View>
         <Text style={styles.ticketNo}>{queue.ticketNumber}</Text>
         <View style={styles.predPill}>
-          <Text style={styles.predText}>
-            Predicted: {queue.predictedWaitMinutes ?? '—'} min
-          </Text>
+          <Text style={styles.predText}>Predicted: {queue.predictedWaitMinutes ?? '—'} min</Text>
         </View>
       </LinearGradient>
+
+      {queue.slot ? (
+        <QueueWaitForecast slot={queue.slot} queueLength={queue.patientsAhead} />
+      ) : null}
 
       <Card>
         <View style={styles.servingRow}>
@@ -88,6 +92,8 @@ export function LiveTicketScreen({ navigation }: Props) {
         </View>
       </View>
 
+      <ErrorText message={error} />
+
       <View style={styles.actions}>
         <GradientButton
           variant="secondary"
@@ -104,7 +110,9 @@ export function LiveTicketScreen({ navigation }: Props) {
                   text: 'Leave',
                   style: 'destructive',
                   onPress: () => {
-                    void leaveQueue().then(() => navigation.replace('JoinQueue'));
+                    void leaveQueue()
+                      .then(() => navigation.replace('JoinQueue'))
+                      .catch(() => undefined);
                   },
                 },
               ],

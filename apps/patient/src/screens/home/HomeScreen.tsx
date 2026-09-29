@@ -1,8 +1,11 @@
+import { useCallback, useRef } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { Bell, Clock3, UserRound } from 'lucide-react-native';
 import { Card } from '../../components/Card';
+import { ErrorText } from '../../components/ErrorText';
 import { GradientButton } from '../../components/GradientButton';
 import { Screen } from '../../components/Screen';
 import { firstName, initials } from '../../lib/format';
@@ -14,9 +17,20 @@ import type { MainTabParamList } from '../../navigation/types';
 type Props = BottomTabScreenProps<MainTabParamList, 'Home'>;
 
 export function HomeScreen({ navigation }: Props) {
-  const { dashboard, refreshDashboard, busy } = usePatient();
+  const { dashboard, refreshDashboard, busy, error } = usePatient();
   const patient = dashboard?.patient;
   const queue = dashboard?.queue;
+  const focusedOnce = useRef(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!focusedOnce.current) {
+        focusedOnce.current = true;
+        return;
+      }
+      void refreshDashboard().catch(() => undefined);
+    }, [refreshDashboard]),
+  );
 
   if (!patient || !queue) {
     return (
@@ -33,7 +47,7 @@ export function HomeScreen({ navigation }: Props) {
       contentStyle={{ paddingHorizontal: 0, paddingTop: 0 }}
       refreshing={busy}
       onRefresh={() => {
-        void refreshDashboard();
+        void refreshDashboard().catch(() => undefined);
       }}
     >
       <LinearGradient colors={[...gradients.header]} style={styles.header}>
@@ -45,20 +59,17 @@ export function HomeScreen({ navigation }: Props) {
             </View>
             <Pressable
               style={styles.bell}
-              onPress={() =>
-                navigation.navigate('Queue', { screen: 'Notifications' })
-              }
+              onPress={() => navigation.navigate('Queue', { screen: 'Notifications' })}
             >
               <Bell color={colors.white} size={20} />
-              {(dashboard?.unreadNotifications ?? 0) > 0 ? (
-                <View style={styles.dot} />
-              ) : null}
+              {(dashboard?.unreadNotifications ?? 0) > 0 ? <View style={styles.dot} /> : null}
             </Pressable>
           </View>
         </View>
       </LinearGradient>
 
       <View style={styles.body}>
+        <ErrorText message={error} />
         <View style={styles.row}>
           <Card style={styles.half}>
             <Text style={styles.meta}>Your queue number</Text>
@@ -67,9 +78,7 @@ export function HomeScreen({ navigation }: Props) {
           <LinearGradient colors={[...gradients.wait]} style={styles.waitCard}>
             <Text style={styles.waitMeta}>Predicted wait</Text>
             <Text style={styles.waitValue}>
-              {queue.predictedWaitMinutes != null
-                ? `${queue.predictedWaitMinutes} min`
-                : '—'}
+              {queue.predictedWaitMinutes != null ? `${queue.predictedWaitMinutes} min` : '—'}
             </Text>
           </LinearGradient>
         </View>
@@ -93,19 +102,17 @@ export function HomeScreen({ navigation }: Props) {
                 key={i}
                 style={[
                   styles.progressDot,
-                  i < Math.min(5, Math.max(1, 5 - queue.patientsAhead)) &&
-                    styles.progressDotOn,
+                  i < Math.min(5, Math.max(1, 5 - queue.patientsAhead)) && styles.progressDotOn,
                 ]}
               />
             ))}
             <Text style={styles.ofTotal}>of {queue.totalInQueue}</Text>
           </View>
-    borderColor: '#B9DFE8',
         </Card>
 
         <GradientButton
           variant="journey"
-          label={hasTicket ? 'View live ticket →' : "Join today’s queue →"}
+          label={hasTicket ? 'View live ticket →' : 'Join today’s queue →'}
           onPress={() => {
             if (hasTicket) {
               navigation.navigate('Queue', { screen: 'LiveTicket' });
@@ -116,10 +123,7 @@ export function HomeScreen({ navigation }: Props) {
         />
 
         <View style={styles.row}>
-          <Pressable
-            style={styles.quick}
-            onPress={() => navigation.navigate('History')}
-          >
+          <Pressable style={styles.quick} onPress={() => navigation.navigate('History')}>
             <Clock3 size={18} color={colors.tealDeep} />
             <Text style={styles.quickText}>Visit history</Text>
           </Pressable>
@@ -134,14 +138,20 @@ export function HomeScreen({ navigation }: Props) {
 
         <View style={styles.checkIn}>
           <Text style={styles.checkInTitle}>At the hospital now?</Text>
-          <Text style={styles.checkInText}>
-            On-site patients get priority in the queue.
-          </Text>
-          <GradientButton
-            variant="journey"
-            label="Show check-in QR"
-            onPress={() => navigation.navigate('Queue', { screen: 'CheckInQr' })}
-          />
+          <Text style={styles.checkInText}>On-site patients get priority in the queue.</Text>
+          {hasTicket ? (
+            <GradientButton
+              variant="journey"
+              label="Show check-in QR"
+              onPress={() => navigation.navigate('Queue', { screen: 'CheckInQr' })}
+            />
+          ) : (
+            <GradientButton
+              variant="secondary"
+              label="Join queue to check in"
+              onPress={() => navigation.navigate('Queue', { screen: 'JoinQueue' })}
+            />
+          )}
         </View>
       </View>
     </Screen>

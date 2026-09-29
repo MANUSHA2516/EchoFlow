@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Clock3, Lightbulb } from 'lucide-react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { GradientButton } from '../../components/GradientButton';
+import { ErrorText } from '../../components/ErrorText';
 import { Screen } from '../../components/Screen';
+import { ScreenHeader } from '../../components/ScreenHeader';
 import { StatusBadge } from '../../components/StatusBadge';
 import { usePatient } from '../../lib/PatientContext';
 import { colors, gradients } from '../../theme/colors';
@@ -16,20 +18,28 @@ type Props = NativeStackScreenProps<QueueStackParamList, 'CheckInQr'>;
 
 export function CheckInQrScreen({ navigation }: Props) {
   const { getCheckIn, refreshCheckIn } = usePatient();
+  const { width } = useWindowDimensions();
+  const qrSize = Math.min(220, width - 88);
   const [payload, setPayload] = useState('');
   const [ticketNumber, setTicketNumber] = useState('—');
   const [expiresAt, setExpiresAt] = useState<number>(Date.now() + 300000);
   const [remaining, setRemaining] = useState('05:00');
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const expiredRefreshAttempted = useRef(false);
 
   const load = useCallback(
     async (refresh = false) => {
       setBusy(true);
+      setError(null);
       try {
         const data = refresh ? await refreshCheckIn() : await getCheckIn();
         setPayload(data.payload);
         setTicketNumber(data.ticketNumber);
         setExpiresAt(new Date(data.expiresAt).getTime());
+        expiredRefreshAttempted.current = false;
+      } catch (e) {
+        setError(e instanceof Error ? e.message : 'Could not load your check-in code.');
       } finally {
         setBusy(false);
       }
@@ -54,8 +64,16 @@ export function CheckInQrScreen({ navigation }: Props) {
     return () => clearInterval(id);
   }, [expiresAt]);
 
+  useEffect(() => {
+    if (payload && remaining === '00:00' && !busy && !expiredRefreshAttempted.current) {
+      expiredRefreshAttempted.current = true;
+      void load(true);
+    }
+  }, [busy, load, payload, remaining]);
+
   return (
     <Screen>
+      <ScreenHeader title="Check-in QR" onBack={() => navigation.goBack()} />
       <View style={styles.topRow}>
         <StatusBadge label="CHECK-IN QR" tone="teal" />
         <Text style={styles.unit}>ECHO UNIT</Text>
@@ -69,7 +87,7 @@ export function CheckInQrScreen({ navigation }: Props) {
           <View style={styles.qrWrap}>
             <QRCode
               value={payload}
-              size={220}
+              size={qrSize}
               color={colors.navy}
               backgroundColor={colors.white}
             />
@@ -78,7 +96,10 @@ export function CheckInQrScreen({ navigation }: Props) {
             </LinearGradient>
           </View>
         ) : (
-          <Text style={styles.loading}>Preparing code…</Text>
+          <View style={styles.loading}>
+            {busy ? <ActivityIndicator color={colors.teal} /> : null}
+            <Text style={styles.loadingText}>{busy ? 'Preparing code…' : 'No code loaded'}</Text>
+          </View>
         )}
         <View style={styles.metaRow}>
           <View style={styles.expires}>
@@ -88,6 +109,8 @@ export function CheckInQrScreen({ navigation }: Props) {
           <Text style={styles.ticket}>{ticketNumber}</Text>
         </View>
       </View>
+
+      <ErrorText message={error} />
 
       <View style={styles.next}>
         <View style={styles.nextHead}>
@@ -163,7 +186,13 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     fontSize: 14,
   },
-  loading: { color: colors.slate },
+  loading: {
+    minHeight: 220,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+  },
+  loadingText: { color: colors.slate },
   metaRow: {
     width: '100%',
     flexDirection: 'row',

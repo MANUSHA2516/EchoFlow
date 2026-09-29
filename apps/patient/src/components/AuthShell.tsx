@@ -6,11 +6,11 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Activity, Globe } from 'lucide-react-native';
-import { colors, gradients } from '../theme/colors';
+import { colors } from '../theme/colors';
 import { radii, spacing } from '../theme/spacing';
 import { StatusBadge } from './StatusBadge';
 import { EcgWave } from './EcgWave';
@@ -35,6 +35,8 @@ export function AuthShell({
   showFooter = true,
   brandSubtitle,
 }: Props) {
+  const { width } = useWindowDimensions();
+  const waveWidth = Math.min(width - 84, 300);
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <KeyboardAvoidingView
@@ -42,54 +44,61 @@ export function AuthShell({
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView
+          style={styles.flex}
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.topRow}>
-            <StatusBadge label={badge} tone={badgeTone} />
-            <Text style={styles.unit}>{unitLabel}</Text>
+          <View style={styles.panel}>
+            <View pointerEvents="none" style={styles.cornerTop} />
+            <View pointerEvents="none" style={styles.cornerBottom} />
+            <View style={styles.panelContent}>
+              <View style={styles.topRow}>
+                <StatusBadge label={badge} tone={badgeTone} />
+                <Text style={styles.unit}>{unitLabel}</Text>
+              </View>
+
+              {showBrand ? (
+                <View style={styles.brand}>
+                  <View style={styles.logo}>
+                    <Activity color={colors.tealDeep} size={27} strokeWidth={2.2} />
+                  </View>
+                  <Text style={styles.hospital}>{config.hospitalName}</Text>
+                  <Text style={styles.portal}>
+                    {(brandSubtitle ?? config.unitLabel).toUpperCase()}
+                  </Text>
+                  <View style={styles.wave}>
+                    <EcgWave width={waveWidth} height={36} />
+                  </View>
+                </View>
+              ) : null}
+
+              {children}
+
+              {showFooter ? (
+                <View style={styles.footer}>
+                  <View style={styles.legend}>
+                    <View style={styles.legendItem}>
+                      <View style={[styles.dot, { backgroundColor: colors.blue }]} />
+                      <Text style={styles.legendText}>HR</Text>
+                    </View>
+                    <View style={styles.legendItem}>
+                      <View style={[styles.dot, { backgroundColor: colors.cyan }]} />
+                      <Text style={styles.legendText}>SpO2</Text>
+                    </View>
+                    <View style={styles.legendItem}>
+                      <View style={[styles.dot, { backgroundColor: colors.green }]} />
+                      <Text style={styles.legendText}>Verified</Text>
+                    </View>
+                  </View>
+                  <View style={styles.lang}>
+                    <Globe size={14} color={colors.slate} />
+                    <Text style={styles.langText}>EN</Text>
+                  </View>
+                </View>
+              ) : null}
+            </View>
           </View>
-
-          {showBrand ? (
-            <View style={styles.brand}>
-              <LinearGradient colors={[...gradients.avatar]} style={styles.logo}>
-                <Activity color={colors.white} size={25} strokeWidth={2.4} />
-              </LinearGradient>
-              <Text style={styles.hospital}>{config.hospitalName}</Text>
-              <Text style={styles.portal}>
-                {(brandSubtitle ?? config.unitLabel).toUpperCase()}
-              </Text>
-              <View style={styles.wave}>
-                <EcgWave width={300} height={40} />
-              </View>
-            </View>
-          ) : null}
-
-          {children}
-
-          {showFooter ? (
-            <View style={styles.footer}>
-              <View style={styles.legend}>
-                <View style={styles.legendItem}>
-                  <View style={[styles.dot, { backgroundColor: colors.blue }]} />
-                  <Text style={styles.legendText}>HR</Text>
-                </View>
-                <View style={styles.legendItem}>
-                  <View style={[styles.dot, { backgroundColor: colors.amber }]} />
-                  <Text style={styles.legendText}>SpO2</Text>
-                </View>
-                <View style={styles.legendItem}>
-                  <View style={[styles.dot, { backgroundColor: colors.green }]} />
-                  <Text style={styles.legendText}>Verified</Text>
-                </View>
-              </View>
-              <View style={styles.lang}>
-                <Globe size={14} color={colors.slate} />
-                <Text style={styles.langText}>EN</Text>
-              </View>
-            </View>
-          ) : null}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -99,16 +108,60 @@ export function AuthShell({
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
-    backgroundColor: colors.surface,
+    backgroundColor: '#EEF5F7',
   },
   flex: { flex: 1 },
   content: {
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.xxxl,
-    gap: spacing.lg,
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  panel: {
+    flexGrow: 1,
+    width: '100%',
+    maxWidth: 430,
+    alignSelf: 'center',
+    overflow: 'hidden',
+    borderRadius: 32,
+    borderWidth: 1,
+    borderColor: '#E7EEF1',
+    backgroundColor: colors.white,
+    shadowColor: '#18364D',
+    shadowOpacity: 0.08,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 3,
+  },
+  panelContent: {
+    flex: 1,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 18,
+    gap: 14,
+    zIndex: 1,
+  },
+  cornerTop: {
+    position: 'absolute',
+    width: 142,
+    height: 142,
+    borderRadius: 80,
+    top: -82,
+    right: -55,
+    backgroundColor: '#E8F2F7',
+  },
+  cornerBottom: {
+    position: 'absolute',
+    width: 132,
+    height: 132,
+    borderRadius: 80,
+    bottom: -85,
+    left: -75,
+    backgroundColor: '#E8F6F4',
   },
   topRow: {
-    marginTop: spacing.sm,
+    marginTop: 0,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -125,7 +178,7 @@ const styles = StyleSheet.create({
   brand: {
     alignItems: 'center',
     gap: spacing.sm,
-    marginTop: spacing.md,
+    marginTop: 2,
   },
   logo: {
     width: 58,
@@ -133,10 +186,12 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
+    backgroundColor: colors.white,
+    borderColor: colors.teal,
+    borderWidth: 2,
   },
   hospital: {
-    fontSize: 26,
+    fontSize: 23,
     fontWeight: '800',
     color: colors.navy,
     letterSpacing: -0.3,
@@ -148,10 +203,11 @@ const styles = StyleSheet.create({
     color: colors.slateSoft,
   },
   wave: {
-    marginTop: spacing.sm,
+    marginTop: 2,
+    alignSelf: 'center',
   },
   footer: {
-    marginTop: spacing.xl,
+    marginTop: spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

@@ -1,10 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MessageSquare } from 'lucide-react-native';
 import { AuthShell } from '../../components/AuthShell';
@@ -25,6 +20,7 @@ export function PhoneOtpScreen({ navigation }: Props) {
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const [seconds, setSeconds] = useState(30);
   const inputs = useRef<Array<TextInput | null>>([]);
+  const hadChallenge = useRef(pendingOtp?.purpose === 'phone_change');
 
   const setDigit = (index: number, value: string) => {
     const cleaned = value.replace(/\D/g, '').slice(0, 6 - index);
@@ -37,7 +33,9 @@ export function PhoneOtpScreen({ navigation }: Props) {
   };
 
   useEffect(() => {
-    if (!pendingOtp || pendingOtp.purpose !== 'phone_change') {
+    if (pendingOtp?.purpose === 'phone_change') {
+      hadChallenge.current = true;
+    } else if (!hadChallenge.current) {
       navigation.replace('UpdatePhone');
     }
   }, [pendingOtp, navigation]);
@@ -90,9 +88,7 @@ export function PhoneOtpScreen({ navigation }: Props) {
       <Text style={styles.resend}>
         Didn’t get a code?{' '}
         {seconds > 0 ? (
-          <Text style={styles.countdown}>
-            Resend in 00:{String(seconds).padStart(2, '0')}
-          </Text>
+          <Text style={styles.countdown}>Resend in 00:{String(seconds).padStart(2, '0')}</Text>
         ) : (
           <Text
             style={styles.resendAction}
