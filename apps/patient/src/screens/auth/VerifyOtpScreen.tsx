@@ -6,8 +6,6 @@ import { AuthShell } from '../../components/AuthShell';
 import { EcgWave } from '../../components/EcgWave';
 import { ErrorText } from '../../components/ErrorText';
 import { GradientButton } from '../../components/GradientButton';
-import { StatusBadge } from '../../components/StatusBadge';
-import { config } from '../../lib/config';
 import { formatPhoneDisplay } from '../../lib/format';
 import { usePatient } from '../../lib/PatientContext';
 import { colors } from '../../theme/colors';
@@ -17,7 +15,7 @@ import type { AuthStackParamList } from '../../navigation/types';
 type Props = NativeStackScreenProps<AuthStackParamList, 'VerifyOtp'>;
 
 export function VerifyOtpScreen({ navigation }: Props) {
-  const { pendingOtp, verifyOtp, resendOtp, busy, error, demoOtp } = usePatient();
+  const { pendingOtp, verifyOtp, resendOtp, busy, error } = usePatient();
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const [seconds, setSeconds] = useState(30);
   const inputs = useRef<Array<TextInput | null>>([]);
@@ -61,7 +59,6 @@ export function VerifyOtpScreen({ navigation }: Props) {
           Code sent to {pendingOtp ? formatPhoneDisplay(pendingOtp.phoneE164) : '—'}
         </Text>
         <EcgWave width={260} height={32} />
-        {config.forceDemo ? <StatusBadge label={`Demo OTP ${demoOtp}`} tone="amber" /> : null}
       </View>
 
       <Text style={styles.codeLabel}>VERIFICATION CODE</Text>
@@ -177,12 +174,16 @@ const styles = StyleSheet.create({
     color: colors.slate,
   },
   otpRow: {
+    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: spacing.sm,
   },
   otpBox: {
     flex: 1,
+    flexBasis: 0,
+    minWidth: 0,
+    paddingHorizontal: 0,
     height: 56,
     borderRadius: radii.md,
     borderWidth: 1.5,

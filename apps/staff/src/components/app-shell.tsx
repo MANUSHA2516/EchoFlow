@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Activity, BarChart3, Bell, CalendarDays, ChevronDown, ClipboardList, LayoutDashboard, LogOut, Menu, Search, Users, X } from 'lucide-react';
 import { useState } from 'react';
-import { staff } from '@/lib/demo-data';
 import { useAuth } from '@/lib/auth';
+import { useStaffProfile } from '@/lib/staff-profile';
 
 const groups = [
   { label: 'Overview', links: [{ href: '/', label: 'Dashboard', icon: LayoutDashboard }] },
@@ -17,6 +17,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { signOut } = useAuth();
+  const staff = useStaffProfile();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 

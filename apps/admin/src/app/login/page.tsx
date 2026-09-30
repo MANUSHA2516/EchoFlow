@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+const FORCE_DEMO = (process.env.NEXT_PUBLIC_FORCE_DEMO ?? 'true') === 'true';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,27 +24,29 @@ export default function LoginPage() {
     e.preventDefault();
     setBusy(true);
     setError('');
-    try {
-      const res = await fetch(`${API_URL}/auth/admin/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          adminId,
-          password,
-          twoFactorCode: code,
-        }),
-      });
-      if (res.ok) {
-        const data = (await res.json()) as { accessToken: string; refreshToken: string };
-        localStorage.setItem(
-          'echoflow-admin-session',
-          JSON.stringify({ accessToken: data.accessToken, refreshToken: data.refreshToken }),
-        );
-        router.push('/');
-        return;
+    if (!FORCE_DEMO) {
+      try {
+        const res = await fetch(`${API_URL}/auth/admin/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            adminId,
+            password,
+            twoFactorCode: code,
+          }),
+        });
+        if (res.ok) {
+          const data = (await res.json()) as { accessToken: string; refreshToken: string };
+          localStorage.setItem(
+            'echoflow-admin-session',
+            JSON.stringify({ accessToken: data.accessToken, refreshToken: data.refreshToken }),
+          );
+          router.push('/');
+          return;
+        }
+      } catch {
+        /* offline demo fallback */
       }
-    } catch {
-      /* offline demo fallback */
     }
     if (
       adminId.trim().toUpperCase() === 'ECHO-ADM-014' &&

@@ -5,8 +5,6 @@ import { MessageSquare } from 'lucide-react-native';
 import { AuthShell } from '../../components/AuthShell';
 import { ErrorText } from '../../components/ErrorText';
 import { GradientButton } from '../../components/GradientButton';
-import { StatusBadge } from '../../components/StatusBadge';
-import { config } from '../../lib/config';
 import { formatPhoneDisplay } from '../../lib/format';
 import { usePatient } from '../../lib/PatientContext';
 import { colors } from '../../theme/colors';
@@ -16,7 +14,7 @@ import type { ProfileStackParamList } from '../../navigation/types';
 type Props = NativeStackScreenProps<ProfileStackParamList, 'PhoneOtp'>;
 
 export function PhoneOtpScreen({ navigation }: Props) {
-  const { pendingOtp, verifyOtp, resendOtp, busy, error, demoOtp } = usePatient();
+  const { pendingOtp, verifyOtp, resendOtp, busy, error } = usePatient();
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const [seconds, setSeconds] = useState(30);
   const inputs = useRef<Array<TextInput | null>>([]);
@@ -58,9 +56,6 @@ export function PhoneOtpScreen({ navigation }: Props) {
         <Text style={styles.subtitle}>
           Code sent to {pendingOtp ? formatPhoneDisplay(pendingOtp.phoneE164) : '—'}
         </Text>
-        {config.forceDemo ? (
-          <StatusBadge label={`Demo OTP ${demoOtp}`} tone="amber" style={{ marginTop: 8 }} />
-        ) : null}
       </View>
 
       <View style={styles.otpRow}>
@@ -149,6 +144,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   otpRow: {
+    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: spacing.sm,
@@ -156,6 +152,9 @@ const styles = StyleSheet.create({
   },
   otpBox: {
     flex: 1,
+    flexBasis: 0,
+    minWidth: 0,
+    paddingHorizontal: 0,
     height: 56,
     borderRadius: radii.md,
     borderWidth: 1.5,

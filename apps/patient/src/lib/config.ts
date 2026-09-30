@@ -11,6 +11,6 @@ export const config = {
   hospitalName: 'General Hospital',
   unitLabel: 'ECHO Unit · Patient Portal',
   /** When true, always use in-app demo store (no network). Set false to prefer live API. */
-  forceDemo: (process.env.EXPO_PUBLIC_FORCE_DEMO ?? 'false') === 'true',
+  forceDemo: (process.env.EXPO_PUBLIC_FORCE_DEMO ?? 'true') === 'true',
   otpDemoHint: 'Use code 123456 in demo mode',
 };

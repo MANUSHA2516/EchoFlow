@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 
 const SESSION_KEY = 'echoflow_staff_session';
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+const FORCE_DEMO = (process.env.NEXT_PUBLIC_FORCE_DEMO ?? 'true') === 'true';
 
 type AuthContextValue = {
   ready: boolean;
@@ -39,22 +40,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signIn = async (staffId: string, password: string, keep: boolean) => {
-    try {
-      const res = await fetch(`${API_URL}/auth/staff/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ staffId, password }),
-      });
-      if (res.ok) {
-        const data = (await res.json()) as { accessToken: string; refreshToken: string };
-        const payload = { staffId, accessToken: data.accessToken, refreshToken: data.refreshToken, at: Date.now() };
-        (keep ? localStorage : sessionStorage).setItem(SESSION_KEY, JSON.stringify(payload));
-        setAccessToken(data.accessToken);
-        setAuthenticated(true);
-        return true;
+    if (!FORCE_DEMO) {
+      try {
+        const res = await fetch(`${API_URL}/auth/staff/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ staffId, password }),
+        });
+        if (res.ok) {
+          const data = (await res.json()) as { accessToken: string; refreshToken: string };
+          const payload = { staffId, accessToken: data.accessToken, refreshToken: data.refreshToken, at: Date.now() };
+          (keep ? localStorage : sessionStorage).setItem(SESSION_KEY, JSON.stringify(payload));
+          setAccessToken(data.accessToken);
+          setAuthenticated(true);
+          return true;
+        }
+      } catch {
+        /* fall through to offline demo */
       }
-    } catch {
-      /* fall through to offline demo */
     }
     const valid = staffId.trim().toUpperCase() === 'ECHO-STF-001' && password === 'EchoFlow!demo';
     if (valid) {
