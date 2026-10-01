@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text } from '../../components/AppText';
+import { Image, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Calendar, MapPin, Phone } from 'lucide-react-native';
@@ -30,7 +31,16 @@ export function ProfileScreen({ navigation }: Props) {
     <Screen contentStyle={{ paddingHorizontal: 0 }}>
       <LinearGradient colors={[...gradients.header]} style={styles.header}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{initials(patient.fullName)}</Text>
+          <>
+            {patient.avatarUrl ? (
+              <Image
+                source={{ uri: patient.avatarUrl }}
+                style={{ width: '100%', height: '100%', borderRadius: 40 }}
+              />
+            ) : (
+              <Text style={styles.avatarText}>{initials(patient.fullName)}</Text>
+            )}
+          </>
         </View>
         <Text style={styles.name}>{patient.fullName}</Text>
         <Text style={styles.nic}>{patient.nic}</Text>
@@ -106,7 +116,7 @@ function Detail({
   return (
     <View style={[styles.detail, !last && styles.detailBorder]}>
       <View style={styles.detailIcon}>{icon}</View>
-      <View>
+      <View style={{ flex: 1 }}>
         <Text style={styles.detailLabel}>{label}</Text>
         <Text style={styles.detailValue}>{value}</Text>
       </View>
@@ -136,12 +146,13 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     color: colors.white,
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '800',
   },
   name: {
+    textAlign: 'center',
     color: colors.white,
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '800',
   },
   nic: {
@@ -157,9 +168,10 @@ const styles = StyleSheet.create({
   verifiedText: {
     color: colors.white,
     fontWeight: '800',
-    fontSize: 12,
+    fontSize: 14,
   },
   chips: {
+    width: '100%',
     marginTop: spacing.md,
     flexDirection: 'row',
     gap: spacing.sm,
@@ -170,7 +182,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     alignItems: 'center',
-    minWidth: 84,
+    flex: 1,
+    minWidth: 0,
   },
   chipValue: {
     color: colors.white,
@@ -178,7 +191,7 @@ const styles = StyleSheet.create({
   },
   chipLabel: {
     color: 'rgba(255,255,255,0.8)',
-    fontSize: 11,
+    fontSize: 12,
   },
   body: {
     marginTop: -20,
@@ -205,7 +218,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     color: colors.slate,
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
   },
   detailValue: {

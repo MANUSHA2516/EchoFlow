@@ -1,4 +1,8 @@
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { Text } from '../../components/AppText';
+import { useCallback, useRef, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { ConfirmSheet } from '../../components/ConfirmSheet';
+import { StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Bell } from 'lucide-react-native';
@@ -16,8 +20,28 @@ import type { QueueStackParamList } from '../../navigation/types';
 type Props = NativeStackScreenProps<QueueStackParamList, 'LiveTicket'>;
 
 export function LiveTicketScreen({ navigation }: Props) {
-  const { dashboard, leaveQueue, busy, error } = usePatient();
+  const { dashboard, leaveQueue, busy, error, refreshDashboard } = usePatient();
   const queue = dashboard?.queue;
+  const [confirmLeave, setConfirmLeave] = useState(false);
+  const refreshInFlight = useRef(false);
+  useFocusEffect(
+    useCallback(() => {
+      const refresh = async () => {
+        if (refreshInFlight.current) return;
+        refreshInFlight.current = true;
+        try {
+          await refreshDashboard();
+        } catch {
+          /* shared error state */
+        } finally {
+          refreshInFlight.current = false;
+        }
+      };
+      void refresh();
+      const timer = setInterval(() => void refresh(), 15000);
+      return () => clearInterval(timer);
+    }, [refreshDashboard]),
+  );
 
   if (!queue?.ticketNumber) {
     return (
@@ -39,7 +63,7 @@ export function LiveTicketScreen({ navigation }: Props) {
   );
 
   return (
-    <Screen>
+    <Screen refreshing={busy} onRefresh={() => void refreshDashboard().catch(() => undefined)}>
       <ScreenHeader title="Your number" onBack={() => navigation.navigate('QueueHome')} />
 
       <LinearGradient colors={[...gradients.ticket]} style={styles.ticketCard}>
@@ -100,24 +124,7 @@ export function LiveTicketScreen({ navigation }: Props) {
           label="Leave queue"
           style={{ flex: 1 }}
           loading={busy}
-          onPress={() => {
-            Alert.alert(
-              'Leave queue?',
-              'Your ticket will be cancelled and your place will be lost.',
-              [
-                { text: 'Stay', style: 'cancel' },
-                {
-                  text: 'Leave',
-                  style: 'destructive',
-                  onPress: () => {
-                    void leaveQueue()
-                      .then(() => navigation.replace('JoinQueue'))
-                      .catch(() => undefined);
-                  },
-                },
-              ],
-            );
-          }}
+          onPress={() => setConfirmLeave(true)}
         />
         <GradientButton
           variant="journey"
@@ -126,6 +133,22 @@ export function LiveTicketScreen({ navigation }: Props) {
           onPress={() => navigation.navigate('LiveQueue')}
         />
       </View>
+      <ConfirmSheet
+        visible={confirmLeave}
+        title="Leave the queue?"
+        message="Your ticket will be cancelled and your current place will be lost."
+        confirmLabel="Yes, leave queue"
+        busy={busy}
+        onCancel={() => setConfirmLeave(false)}
+        onConfirm={() => {
+          void leaveQueue()
+            .then(() => {
+              setConfirmLeave(false);
+              navigation.replace('JoinQueue');
+            })
+            .catch(() => setConfirmLeave(false));
+        }}
+      />
     </Screen>
   );
 }
@@ -133,7 +156,7 @@ export function LiveTicketScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   empty: {
     color: colors.slate,
-    lineHeight: 20,
+    lineHeight: 24,
   },
   ticketCard: {
     borderRadius: radii.xl,
@@ -167,7 +190,7 @@ const styles = StyleSheet.create({
   },
   liveText: {
     color: colors.white,
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '800',
     letterSpacing: 0.5,
   },
@@ -205,13 +228,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.amber,
   },
   nowServing: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
     letterSpacing: 0.6,
     color: colors.slate,
   },
   servingNo: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '800',
     color: colors.navy,
     fontVariant: ['tabular-nums'],
@@ -235,7 +258,7 @@ const styles = StyleSheet.create({
   stat: {
     color: colors.slate,
     fontWeight: '600',
-    fontSize: 13,
+    fontSize: 15,
   },
   alert: {
     flexDirection: 'row',
@@ -259,7 +282,7 @@ const styles = StyleSheet.create({
   },
   alertBody: {
     color: colors.slate,
-    fontSize: 13,
+    fontSize: 15,
   },
   actions: {
     flexDirection: 'row',

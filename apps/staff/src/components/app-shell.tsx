@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { Activity, BarChart3, Bell, CalendarDays, ChevronDown, ClipboardList, LayoutDashboard, LogOut, Menu, Search, Users, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { useStaffProfile } from '@/lib/staff-profile';
 
@@ -21,6 +22,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
+  const [now, setNow] = useState<Date | null>(null);
+  const profileMenu = useRef<HTMLDivElement>(null);
+  const initials = staff.fullName.split(/\s+/).map((part) => part[0]).join('').slice(0, 2);
+  useEffect(() => {
+    const initial = window.setTimeout(() => setNow(new Date()), 0);
+    const timer = window.setInterval(() => setNow(new Date()), 60000);
+    return () => { window.clearTimeout(initial); window.clearInterval(timer); };
+  }, []);
+  useEffect(() => {
+    const close = (event: PointerEvent) => {
+      if (!profileMenu.current?.contains(event.target as Node)) setProfileOpen(false);
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { setProfileOpen(false); setMobileOpen(false); }
+    };
+    document.addEventListener('pointerdown', close);
+    document.addEventListener('keydown', escape);
+    return () => { document.removeEventListener('pointerdown', close); document.removeEventListener('keydown', escape); };
+  }, []);
+
   const logout = () => {
     signOut();
     router.replace('/login');
@@ -28,6 +49,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="staff-layout">
+      <a href="#staff-main" className="staff-skip-link">Skip to content</a>
       {mobileOpen && <button className="staff-mobile-scrim" onClick={() => setMobileOpen(false)} aria-label="Close navigation" />}
       <aside className={`staff-sidebar${mobileOpen ? ' staff-sidebar-open' : ''}`}>
         <div className="staff-brand">
@@ -49,22 +71,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
         <div className="staff-sidebar-bottom">
           <div className="staff-system-status"><span className="staff-status-dot" />Systems operational</div>
-          <Link href="/profile" className="staff-sidebar-profile" onClick={() => setMobileOpen(false)}><span className="staff-avatar">NB</span><span><b>{staff.name}</b><small>Technician · On shift</small></span></Link>
+          <Link href="/profile" className="staff-sidebar-profile" onClick={() => setMobileOpen(false)}><span className="staff-avatar">{staff.photoDataUrl ? <Image src={staff.photoDataUrl} alt="" width={38} height={38} unoptimized /> : initials}</span><span><b>{staff.name}</b><small>Technician · On shift</small></span></Link>
           <button onClick={logout} className="staff-logout"><LogOut size={16} />Log out</button>
         </div>
       </aside>
       <div className="staff-main">
         <header className="staff-topbar">
           <div className="staff-topbar-start">
-            <button className="staff-mobile-menu" onClick={() => setMobileOpen(true)} aria-label="Open navigation"><Menu size={19} /></button>
-            <div className="staff-date"><CalendarDays size={16} /><span>Monday, 7 September 2026</span><i />5:18 PM</div>
+            <button className="staff-mobile-menu" onClick={() => setMobileOpen(true)} aria-expanded={mobileOpen} aria-label="Open navigation"><Menu size={19} /></button>
+            <div className="staff-date"><CalendarDays size={16} /><span>{now?.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }) ?? 'Staff workspace'}</span><i />{now?.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</div>
           </div>
           <div className="staff-topbar-actions">
             <Link href="/patients" className="staff-topbar-icon" aria-label="Find a patient" title="Find a patient"><Search size={18} /></Link>
             <button className="staff-topbar-icon staff-notification" onClick={() => router.push('/queue')} aria-label="Queue notifications" title="Queue notifications"><Bell size={18} /><i /></button>
-            <div className="staff-profile-menu">
-              <button className="staff-profile-trigger" onClick={() => setProfileOpen(!profileOpen)} aria-expanded={profileOpen}>
-                <span className="staff-avatar">NB</span>
+            <div className="staff-profile-menu" ref={profileMenu}>
+              <button className="staff-profile-trigger" onClick={() => setProfileOpen(!profileOpen)} aria-label="Account options" aria-expanded={profileOpen}>
+                <span className="staff-avatar">{staff.photoDataUrl ? <Image src={staff.photoDataUrl} alt="" width={38} height={38} unoptimized /> : initials}</span>
                 <span className="staff-profile-copy"><b>{staff.name}</b><small>Technician · On shift</small></span>
                 <ChevronDown size={15} />
               </button>
@@ -72,7 +94,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </header>
-        <main className="staff-content">{children}</main>
+        <main id="staff-main" tabIndex={-1} className="staff-content">{children}</main>
       </div>
     </div>
   );

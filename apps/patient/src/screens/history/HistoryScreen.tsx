@@ -1,8 +1,11 @@
+import { Text } from '../../components/AppText';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { HeartPulse, Stethoscope, UserRound } from 'lucide-react-native';
 import { VisitReason, VisitStatus, VISIT_REASON_LABELS } from '@echoflow/types';
+import { FilterChips } from '../../components/FilterChips';
+import { TextField } from '../../components/TextField';
 import { Card } from '../../components/Card';
 import { ErrorText } from '../../components/ErrorText';
 import { GradientButton } from '../../components/GradientButton';
@@ -25,6 +28,8 @@ function visitIcon(type: VisitReason) {
 export function HistoryScreen() {
   const { visits, loadVisits, error, dashboard } = usePatient();
   const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState('All visits');
 
   useFocusEffect(
     useCallback(() => {
@@ -55,6 +60,19 @@ export function HistoryScreen() {
   const archived = visits.filter((v) => v.status === VisitStatus.Archived).length;
   const total = dashboard?.patient.totalVisits ?? visits.length;
 
+  const filtered = visits.filter((visit) => {
+    const matches =
+      `${VISIT_REASON_LABELS[visit.visitType]} ${visit.doctorName} ${formatVisitDate(visit.serviceDate)}`
+        .toLowerCase()
+        .includes(query.trim().toLowerCase());
+    return (
+      matches &&
+      (filter === 'All visits' ||
+        (filter === 'Completed'
+          ? visit.status === VisitStatus.Completed
+          : visit.status === VisitStatus.Archived))
+    );
+  });
   return (
     <Screen refreshing={loading} onRefresh={() => void refresh()}>
       <StatusBadge label="ECHO UNIT RECORDS" tone="teal" />
@@ -75,7 +93,34 @@ export function HistoryScreen() {
         </Card>
       </View>
 
+      <TextField
+        label="Find a visit"
+        placeholder="Search doctor, date or visit type"
+        value={query}
+        onChangeText={setQuery}
+        autoCorrect={false}
+        clearButtonMode="while-editing"
+      />
+      <FilterChips
+        options={['All visits', 'Completed', 'Archived']}
+        value={filter}
+        onChange={setFilter}
+      />
       <ErrorText message={error} />
+      {!loading && visits.length > 0 && filtered.length === 0 && (
+        <Card>
+          <Text style={styles.emptyTitle}>No matching visits</Text>
+          <Text style={styles.stateText}>Try another search or choose a different filter.</Text>
+          <GradientButton
+            label="Clear filters"
+            variant="ghost"
+            onPress={() => {
+              setQuery('');
+              setFilter('All visits');
+            }}
+          />
+        </Card>
+      )}
 
       {loading && visits.length === 0 ? (
         <View style={styles.state}>
@@ -95,7 +140,7 @@ export function HistoryScreen() {
         </View>
       ) : null}
 
-      {visits.map((v) => (
+      {filtered.map((v) => (
         <View key={v.id} style={styles.visit}>
           <View
             style={[
@@ -109,21 +154,23 @@ export function HistoryScreen() {
             <Text style={styles.meta}>
               {formatVisitDate(v.serviceDate)} · {v.doctorName}
             </Text>
-          </View>
-          <View
-            style={[
-              styles.pill,
-              v.status === VisitStatus.Completed ? styles.pillDone : styles.pillArchived,
-            ]}
-          >
-            <Text
+            <View
               style={[
-                styles.pillText,
-                v.status === VisitStatus.Completed ? styles.pillTextDone : styles.pillTextArchived,
+                styles.pill,
+                v.status === VisitStatus.Completed ? styles.pillDone : styles.pillArchived,
               ]}
             >
-              {v.status === VisitStatus.Completed ? 'Completed' : 'Archived'}
-            </Text>
+              <Text
+                style={[
+                  styles.pillText,
+                  v.status === VisitStatus.Completed
+                    ? styles.pillTextDone
+                    : styles.pillTextArchived,
+                ]}
+              >
+                {v.status === VisitStatus.Completed ? 'Completed' : 'Archived'}
+              </Text>
+            </View>
           </View>
         </View>
       ))}
@@ -146,12 +193,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     color: colors.navy,
     fontWeight: '800',
-    fontSize: 15,
+    fontSize: 17,
   },
   stateText: {
     color: colors.slate,
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 24,
   },
   stats: {
     flexDirection: 'row',
@@ -163,13 +210,13 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
   statValue: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: '800',
     color: colors.navy,
   },
   statLabel: {
     marginTop: 4,
-    fontSize: 11,
+    fontSize: 12,
     color: colors.slate,
     fontWeight: '600',
     textAlign: 'center',
@@ -208,16 +255,18 @@ const styles = StyleSheet.create({
   meta: {
     marginTop: 2,
     color: colors.slate,
-    fontSize: 12,
+    fontSize: 14,
   },
   pill: {
+    alignSelf: 'flex-start',
+    marginTop: 8,
     borderRadius: radii.pill,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
   pillDone: { backgroundColor: colors.greenSoft },
   pillArchived: { backgroundColor: '#F1F5F9' },
-  pillText: { fontSize: 11, fontWeight: '800' },
+  pillText: { fontSize: 12, fontWeight: '800' },
   pillTextDone: { color: '#047857' },
   pillTextArchived: { color: colors.slate },
 });

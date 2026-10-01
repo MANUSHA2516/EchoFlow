@@ -47,7 +47,7 @@ function AuthNavigator() {
 
 function QueueNavigator() {
   return (
-    <QueueStack.Navigator initialRouteName="LiveQueue" screenOptions={{ headerShown: false }}>
+    <QueueStack.Navigator initialRouteName="QueueHome" screenOptions={{ headerShown: false }}>
       <QueueStack.Screen name="QueueHome" component={QueueHomeScreen} />
       <QueueStack.Screen name="JoinQueue" component={JoinQueueScreen} />
       <QueueStack.Screen name="LiveTicket" component={LiveTicketScreen} />
@@ -75,17 +75,21 @@ function MainTabs() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
+        tabBarHideOnKeyboard: true,
         tabBarActiveTintColor: colors.teal,
         tabBarInactiveTintColor: colors.slateSoft,
         tabBarStyle: {
           borderTopColor: colors.border,
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          elevation: 8,
           backgroundColor: colors.white,
-          height: 58 + insets.bottom,
+          height: 72 + insets.bottom,
           paddingBottom: Math.max(6, insets.bottom),
-          paddingTop: 6,
+          paddingTop: 10,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: '700',
         },
         tabBarIcon: ({ color, size, focused }) => {
@@ -113,13 +117,7 @@ function MainTabs() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen
-        name="Queue"
-        component={QueueNavigator}
-        listeners={({ navigation }) => ({
-          tabPress: () => navigation.navigate('Queue', { screen: 'LiveQueue' }),
-        })}
-      />
+      <Tab.Screen name="Queue" component={QueueNavigator} />
       <Tab.Screen name="History" component={HistoryScreen} />
       <Tab.Screen name="Profile" component={ProfileNavigator} />
     </Tab.Navigator>

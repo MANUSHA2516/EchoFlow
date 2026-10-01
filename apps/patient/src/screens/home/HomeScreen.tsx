@@ -1,9 +1,11 @@
+import { Text } from '../../components/AppText';
 import { useCallback, useRef } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { Bell, Clock3, UserRound } from 'lucide-react-native';
+import { VisitChecklist } from '../../components/VisitChecklist';
 import { Card } from '../../components/Card';
 import { ErrorText } from '../../components/ErrorText';
 import { GradientButton } from '../../components/GradientButton';
@@ -17,7 +19,7 @@ import type { MainTabParamList } from '../../navigation/types';
 type Props = BottomTabScreenProps<MainTabParamList, 'Home'>;
 
 export function HomeScreen({ navigation }: Props) {
-  const { dashboard, refreshDashboard, busy, error } = usePatient();
+  const { dashboard, refreshDashboard, busy, error, usingDemo } = usePatient();
   const patient = dashboard?.patient;
   const queue = dashboard?.queue;
   const focusedOnce = useRef(false);
@@ -35,6 +37,12 @@ export function HomeScreen({ navigation }: Props) {
   if (!patient || !queue) {
     return (
       <Screen>
+        <ErrorText message={error} />
+        <GradientButton
+          label="Refresh dashboard"
+          variant="secondary"
+          onPress={() => void refreshDashboard().catch(() => undefined)}
+        />
         <Text style={styles.loading}>Loading dashboard…</Text>
       </Screen>
     );
@@ -52,12 +60,26 @@ export function HomeScreen({ navigation }: Props) {
     >
       <LinearGradient colors={[...gradients.header]} style={styles.header}>
         <View style={styles.headerRow}>
-          <Text style={styles.hello}>Hello, {firstName(patient.fullName)}</Text>
+          <View style={{ flex: 1, gap: 4 }}>
+            <Text style={{ color: '#C7E9EF', fontSize: 12, fontWeight: '700', letterSpacing: 1.5 }}>
+              YOUR CARE, SIMPLIFIED
+            </Text>
+            <Text style={styles.hello}>Hello, {firstName(patient.fullName)}</Text>
+          </View>
           <View style={styles.headerActions}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{initials(patient.fullName)}</Text>
+              {patient.avatarUrl ? (
+                <Image
+                  source={{ uri: patient.avatarUrl }}
+                  style={{ width: 40, height: 40, borderRadius: 20 }}
+                />
+              ) : (
+                <Text style={styles.avatarText}>{initials(patient.fullName)}</Text>
+              )}
             </View>
             <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Open notifications"
               style={styles.bell}
               onPress={() => navigation.navigate('Queue', { screen: 'Notifications' })}
             >
@@ -66,6 +88,12 @@ export function HomeScreen({ navigation }: Props) {
             </Pressable>
           </View>
         </View>
+        <Text style={{ color: '#D6EDF2', marginTop: 18, maxWidth: 310 }}>
+          Your next visit, a little easier. Keep your place and plan your day.
+        </Text>
+        {usingDemo && (
+          <Text style={{ color: '#D6EDF2', fontSize: 12, marginTop: 10 }}>Demo workspace</Text>
+        )}
       </LinearGradient>
 
       <View style={styles.body}>
@@ -153,6 +181,7 @@ export function HomeScreen({ navigation }: Props) {
             />
           )}
         </View>
+        <VisitChecklist />
       </View>
     </Screen>
   );
@@ -167,18 +196,19 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.lg,
-    paddingBottom: spacing.xxxl,
+    paddingBottom: 44,
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
   },
   headerRow: {
+    gap: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   hello: {
     color: colors.white,
-    fontSize: 26,
+    fontSize: 30,
     fontWeight: '800',
   },
   headerActions: {
@@ -227,35 +257,37 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   half: {
+    minWidth: 0,
     flex: 1,
   },
   meta: {
     color: colors.slate,
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
   },
   ticket: {
     marginTop: 6,
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '800',
     color: colors.navy,
     fontVariant: ['tabular-nums'],
   },
   waitCard: {
+    minWidth: 0,
     flex: 1,
     borderRadius: radii.lg,
     padding: spacing.lg,
     justifyContent: 'center',
   },
   waitMeta: {
-    color: 'rgba(255,255,255,0.9)',
-    fontSize: 12,
+    color: colors.tealDeep,
+    fontSize: 14,
     fontWeight: '700',
   },
   waitValue: {
     marginTop: 6,
-    color: colors.white,
-    fontSize: 28,
+    color: colors.tealDeep,
+    fontSize: 32,
     fontWeight: '800',
   },
   liveRow: {
@@ -273,13 +305,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.amber,
   },
   liveLabel: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
     letterSpacing: 0.5,
     color: colors.slate,
   },
   serving: {
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: '800',
     color: colors.navy,
     fontVariant: ['tabular-nums'],
@@ -306,14 +338,14 @@ const styles = StyleSheet.create({
   ofTotal: {
     marginLeft: spacing.sm,
     color: colors.slateSoft,
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
   },
   quick: {
     flex: 1,
-    minHeight: 52,
+    minHeight: 64,
     borderRadius: radii.lg,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: colors.teal,
     backgroundColor: colors.white,
     flexDirection: 'row',
@@ -322,6 +354,8 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   quickText: {
+    fontSize: 15,
+    flexShrink: 1,
     color: colors.tealDeep,
     fontWeight: '700',
   },
@@ -336,12 +370,12 @@ const styles = StyleSheet.create({
   checkInTitle: {
     color: colors.tealDeep,
     fontWeight: '800',
-    fontSize: 16,
+    fontSize: 18,
   },
   checkInText: {
     color: colors.tealDeep,
     fontWeight: '600',
-    lineHeight: 20,
+    lineHeight: 24,
     marginTop: -4,
   },
 });

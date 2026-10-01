@@ -1,5 +1,6 @@
+import { Text } from '../../components/AppText';
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MessageSquare } from 'lucide-react-native';
 import { AuthShell } from '../../components/AuthShell';
@@ -14,7 +15,7 @@ import type { ProfileStackParamList } from '../../navigation/types';
 type Props = NativeStackScreenProps<ProfileStackParamList, 'PhoneOtp'>;
 
 export function PhoneOtpScreen({ navigation }: Props) {
-  const { pendingOtp, verifyOtp, resendOtp, busy, error } = usePatient();
+  const { pendingOtp, verifyOtp, resendOtp, busy, error, usingDemo, demoOtp } = usePatient();
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const [seconds, setSeconds] = useState(30);
   const inputs = useRef<Array<TextInput | null>>([]);
@@ -23,6 +24,7 @@ export function PhoneOtpScreen({ navigation }: Props) {
   const setDigit = (index: number, value: string) => {
     const cleaned = value.replace(/\D/g, '').slice(0, 6 - index);
     const next = [...digits];
+    next[index] = '';
     cleaned.split('').forEach((digit, offset) => {
       next[index + offset] = digit;
     });
@@ -58,6 +60,11 @@ export function PhoneOtpScreen({ navigation }: Props) {
         </Text>
       </View>
 
+      {usingDemo && (
+        <Text style={{ textAlign: 'center', color: colors.tealDeep, fontSize: 14 }}>
+          Demo verification code: {demoOtp}
+        </Text>
+      )}
       <View style={styles.otpRow}>
         {digits.map((d, i) => (
           <TextInput
@@ -73,7 +80,11 @@ export function PhoneOtpScreen({ navigation }: Props) {
               }
             }}
             keyboardType="number-pad"
-            maxLength={1}
+            maxLength={6 - i}
+            accessibilityLabel={`Verification digit ${i + 1} of 6`}
+            textContentType="oneTimeCode"
+            autoComplete="sms-otp"
+            editable={!busy}
             style={styles.otpBox}
             selectTextOnFocus
           />
@@ -89,7 +100,10 @@ export function PhoneOtpScreen({ navigation }: Props) {
             style={styles.resendAction}
             onPress={async () => {
               try {
+                if (busy) return;
                 await resendOtp();
+                setDigits(['', '', '', '', '', '']);
+                inputs.current[0]?.focus();
                 setSeconds(30);
               } catch {
                 /* context */
@@ -135,13 +149,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '800',
     color: colors.navy,
   },
   subtitle: {
     color: colors.slate,
-    fontSize: 14,
+    fontSize: 16,
   },
   otpRow: {
     width: '100%',
@@ -161,14 +175,14 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     backgroundColor: colors.surface,
     textAlign: 'center',
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: '800',
     color: colors.navy,
   },
   resend: {
     textAlign: 'center',
     color: colors.slate,
-    fontSize: 13,
+    fontSize: 15,
   },
   countdown: {
     fontWeight: '700',

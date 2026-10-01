@@ -1,11 +1,6 @@
+import { Text } from './AppText';
 import { LinearGradient } from 'expo-linear-gradient';
-import {
-  ActivityIndicator,
-  Pressable,
-  StyleSheet,
-  Text,
-  ViewStyle,
-} from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, ViewStyle } from 'react-native';
 import { colors, gradients } from '../theme/colors';
 import { radii, spacing } from '../theme/spacing';
 
@@ -31,6 +26,9 @@ export function GradientButton({
   if (variant === 'secondary' || variant === 'danger' || variant === 'ghost') {
     return (
       <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        accessibilityState={{ disabled: !!disabled || !!loading, busy: !!loading }}
         onPress={onPress}
         disabled={disabled || loading}
         style={[
@@ -60,14 +58,21 @@ export function GradientButton({
     );
   }
 
-  const colorsFor =
-    variant === 'journey' ? gradients.journeyButton : gradients.authButton;
+  const colorsFor = variant === 'journey' ? gradients.journeyButton : gradients.authButton;
 
   return (
     <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: !!disabled || !!loading, busy: !!loading }}
       onPress={onPress}
       disabled={disabled || loading}
-      style={[styles.pressable, (disabled || loading) && styles.disabled, style]}
+      style={({ pressed }) => [
+        styles.pressable,
+        pressed && { opacity: 0.85, transform: [{ scale: 0.985 }] },
+        (disabled || loading) && styles.disabled,
+        style,
+      ]}
     >
       <LinearGradient
         colors={[...colorsFor]}
@@ -91,15 +96,17 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   base: {
-    minHeight: 52,
+    minHeight: 58,
     borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
+    paddingVertical: 14,
   },
   label: {
     color: colors.white,
-    fontSize: 16,
+    fontSize: 17,
+    textAlign: 'center',
     fontWeight: '700',
   },
   secondary: {

@@ -1,5 +1,6 @@
+import { Text } from '../../components/AppText';
 import { useCallback } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { GradientButton } from '../../components/GradientButton';
@@ -68,6 +69,6 @@ export function QueueHomeScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   lead: {
     color: '#64748B',
-    lineHeight: 21,
+    lineHeight: 25,
   },
 });

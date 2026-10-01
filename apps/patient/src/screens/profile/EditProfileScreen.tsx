@@ -1,5 +1,6 @@
+import { Text } from '../../components/AppText';
 import { useState } from 'react';
-import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -30,10 +31,9 @@ export function EditProfileScreen({ navigation }: Props) {
   const { dashboard, updateProfile, busy, error } = usePatient();
   const patient = dashboard?.patient;
 
+  const [formError, setFormError] = useState<string | null>(null);
   const [fullName, setFullName] = useState(patient?.fullName ?? '');
-  const [dobDisplay, setDobDisplay] = useState(
-    patient ? formatDobInput(patient.dateOfBirth) : '',
-  );
+  const [dobDisplay, setDobDisplay] = useState(patient ? formatDobInput(patient.dateOfBirth) : '');
   const [address, setAddress] = useState(patient?.address ?? '');
   const [photoUri, setPhotoUri] = useState(patient?.avatarUrl);
 
@@ -63,7 +63,12 @@ export function EditProfileScreen({ navigation }: Props) {
     <Screen>
       <ScreenHeader title="Edit profile" onBack={() => navigation.goBack()} />
 
-      <Pressable style={styles.avatarWrap} onPress={choosePhoto} accessibilityRole="button" accessibilityLabel="Choose profile photo">
+      <Pressable
+        style={styles.avatarWrap}
+        onPress={choosePhoto}
+        accessibilityRole="button"
+        accessibilityLabel="Choose profile photo"
+      >
         {photoUri ? (
           <Image source={{ uri: photoUri }} style={styles.avatar} />
         ) : (
@@ -122,7 +127,7 @@ export function EditProfileScreen({ navigation }: Props) {
         right={<Pencil size={16} color={colors.slateSoft} />}
       />
 
-      <ErrorText message={error} />
+      <ErrorText message={formError ?? error} />
 
       <GradientButton
         variant="journey"
@@ -130,12 +135,30 @@ export function EditProfileScreen({ navigation }: Props) {
         loading={busy}
         onPress={async () => {
           try {
-            const parts = dobDisplay.split(/[/\-.\s]+/).filter(Boolean);
-            let iso = patient.dateOfBirth;
-            if (parts.length === 3) {
-              const [dd, mm, yyyy] = parts;
-              iso = `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
+            setFormError(null);
+            if (!fullName.trim()) {
+              setFormError('Please enter your full name.');
+              return;
             }
+            const parts = dobDisplay
+              .trim()
+              .split(/[/\-.\s]+/)
+              .filter(Boolean)
+              .map(Number);
+            const [day, month, year] = parts;
+            const date = new Date(year, month - 1, day);
+            if (
+              parts.length !== 3 ||
+              year < 1900 ||
+              date.getFullYear() !== year ||
+              date.getMonth() !== month - 1 ||
+              date.getDate() !== day ||
+              date > new Date()
+            ) {
+              setFormError('Enter a valid date of birth as DD / MM / YYYY.');
+              return;
+            }
+            const iso = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             await updateProfile({
               fullName: fullName.trim(),
               dateOfBirth: iso,
@@ -148,11 +171,7 @@ export function EditProfileScreen({ navigation }: Props) {
           }
         }}
       />
-      <GradientButton
-        variant="secondary"
-        label="Cancel"
-        onPress={() => navigation.goBack()}
-      />
+      <GradientButton variant="secondary" label="Cancel" onPress={() => navigation.goBack()} />
     </Screen>
   );
 }
@@ -174,7 +193,7 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     color: colors.white,
-    fontSize: 32,
+    fontSize: 36,
     fontWeight: '800',
   },
   camera: {
@@ -193,14 +212,14 @@ const styles = StyleSheet.create({
   photoHint: {
     marginTop: spacing.sm,
     color: colors.blue,
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
   },
   removePhoto: {
     alignSelf: 'center',
     marginBottom: spacing.sm,
     color: colors.red,
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
   },
 });

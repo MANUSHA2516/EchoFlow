@@ -1,5 +1,6 @@
+import { Text } from '../../components/AppText';
 import { useCallback, useRef, useState } from 'react';
-import { StyleSheet, Text, View, Pressable } from 'react-native';
+import { StyleSheet, View, Pressable } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AlertTriangle, Check, QrCode, UserRound } from 'lucide-react-native';
@@ -167,22 +168,25 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xl,
   },
   summaryRow: {
+    flexWrap: 'wrap',
+    gap: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   summaryCol: {
+    minWidth: 95,
     flex: 1,
     gap: 6,
   },
   caps: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '800',
     letterSpacing: 0.7,
     color: colors.slateSoft,
   },
   ticket: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '800',
     color: colors.blue,
     fontVariant: ['tabular-nums'],
@@ -198,12 +202,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.blueSoft,
   },
   circleValue: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: '800',
     color: colors.navy,
   },
   circleLabel: {
-    fontSize: 10,
+    fontSize: 11,
     color: colors.slate,
     fontWeight: '600',
   },
@@ -216,7 +220,7 @@ const styles = StyleSheet.create({
   statusText: {
     color: colors.blue,
     fontWeight: '800',
-    fontSize: 12,
+    fontSize: 14,
   },
   moved: {
     flexDirection: 'row',
@@ -229,7 +233,7 @@ const styles = StyleSheet.create({
   movedBody: {
     flex: 1,
     color: '#92400E',
-    lineHeight: 20,
+    lineHeight: 24,
     fontWeight: '600',
   },
   qrBar: {
@@ -260,7 +264,7 @@ const styles = StyleSheet.create({
   qrChipText: {
     color: colors.white,
     fontWeight: '800',
-    fontSize: 12,
+    fontSize: 14,
   },
   timeline: {
     gap: 0,
@@ -340,8 +344,9 @@ const styles = StyleSheet.create({
     color: colors.tealDeep,
   },
   itemLabel: {
+    flexShrink: 1,
     color: colors.slate,
     fontWeight: '700',
-    fontSize: 12,
+    fontSize: 14,
   },
 });

@@ -1,5 +1,6 @@
+import { Text } from '../../components/AppText';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Calendar, CreditCard, Phone, User } from 'lucide-react-native';
 import { AuthShell } from '../../components/AuthShell';
@@ -96,6 +97,16 @@ export function LoginScreen({ navigation, route }: Props) {
       badge={isRegistering ? 'NEW PATIENT' : 'SECURE LOGIN'}
       badgeTone={isRegistering ? 'blue' : 'mint'}
     >
+      <View style={{ gap: 8 }}>
+        <Text style={{ fontSize: 32, fontWeight: '800', letterSpacing: -1 }}>
+          {isRegistering ? 'Your care starts here.' : 'Welcome back.'}
+        </Text>
+        <Text style={{ color: colors.slate }}>
+          {isRegistering
+            ? 'Create your patient account in a few simple steps.'
+            : 'Less waiting. More peace of mind. Sign in to plan your visit.'}
+        </Text>
+      </View>
       <View style={styles.tabs}>
         <Pressable
           accessibilityRole="tab"
@@ -188,7 +199,7 @@ const styles = StyleSheet.create({
   },
   tab: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: 14,
     borderRadius: radii.pill,
     alignItems: 'center',
   },
@@ -205,8 +216,8 @@ const styles = StyleSheet.create({
   link: {
     textAlign: 'center',
     color: colors.slate,
-    fontSize: 13,
-    lineHeight: 20,
+    fontSize: 15,
+    lineHeight: 24,
   },
   linkStrong: {
     color: colors.tealDeep,

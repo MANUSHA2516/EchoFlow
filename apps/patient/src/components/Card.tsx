@@ -10,9 +10,7 @@ type Props = {
 };
 
 export function Card({ children, style, padded = true }: Props) {
-  return (
-    <View style={[styles.card, padded && styles.padded, style]}>{children}</View>
-  );
+  return <View style={[styles.card, padded && styles.padded, style]}>{children}</View>;
 }
 
 const styles = StyleSheet.create({
@@ -22,12 +20,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     shadowColor: colors.navy,
-    shadowOpacity: 0.045,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 6 },
     elevation: 1,
   },
   padded: {
-    padding: spacing.lg,
+    padding: spacing.xl,
   },
 });

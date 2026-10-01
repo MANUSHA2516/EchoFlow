@@ -1,9 +1,11 @@
+import { Text } from '../../components/AppText';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Bell, CheckCircle2, MapPin, MoveDown, Users } from 'lucide-react-native';
 import { NotificationType } from '@echoflow/types';
+import { FilterChips } from '../../components/FilterChips';
 import { Screen } from '../../components/Screen';
 import { ErrorText } from '../../components/ErrorText';
 import { GradientButton } from '../../components/GradientButton';
@@ -34,6 +36,9 @@ function iconFor(type: NotificationType) {
 export function NotificationsScreen({ navigation }: Props) {
   const { notifications, loadNotifications, markNotificationsRead, error } = usePatient();
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('All');
+  const unreadCount = notifications.filter((item) => !item.readAt).length;
+  const filtered = notifications.filter((item) => filter === 'All' || !item.readAt);
 
   const load = useCallback(
     async (markRead = false) => {
@@ -52,7 +57,7 @@ export function NotificationsScreen({ navigation }: Props) {
 
   useFocusEffect(
     useCallback(() => {
-      void load(true);
+      void load();
     }, [load]),
   );
 
@@ -64,6 +69,18 @@ export function NotificationsScreen({ navigation }: Props) {
         onBack={() => navigation.goBack()}
       />
 
+      <FilterChips options={['All', 'Unread']} value={filter} onChange={setFilter} />
+      {unreadCount > 0 && (
+        <GradientButton
+          label={`Mark ${unreadCount} as read`}
+          variant="secondary"
+          loading={loading}
+          onPress={() => void load(true)}
+        />
+      )}
+      {filter === 'Unread' && unreadCount === 0 && !loading && (
+        <Text style={styles.empty}>You are all caught up. No unread updates.</Text>
+      )}
       <ErrorText message={error} />
 
       {loading && notifications.length === 0 ? (
@@ -81,8 +98,8 @@ export function NotificationsScreen({ navigation }: Props) {
         <Text style={styles.empty}>No notifications yet.</Text>
       ) : null}
 
-      {!error && notifications.length > 0
-        ? notifications.map((n) => {
+      {notifications.length > 0
+        ? filtered.map((n) => {
             const unread = !n.readAt;
             return (
               <View key={n.id} style={[styles.card, unread && styles.cardUnread]}>
@@ -139,8 +156,8 @@ const styles = StyleSheet.create({
   },
   detail: {
     color: colors.slate,
-    lineHeight: 18,
-    fontSize: 13,
+    lineHeight: 22,
+    fontSize: 15,
   },
   meta: {
     alignItems: 'flex-end',
@@ -148,7 +165,7 @@ const styles = StyleSheet.create({
   },
   time: {
     color: colors.slateSoft,
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '600',
   },
   dot: {

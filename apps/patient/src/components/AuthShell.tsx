@@ -1,10 +1,10 @@
+import { Text } from './AppText';
 import { ReactNode } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   View,
   useWindowDimensions,
 } from 'react-native';
@@ -80,15 +80,15 @@ export function AuthShell({
                   <View style={styles.legend}>
                     <View style={styles.legendItem}>
                       <View style={[styles.dot, { backgroundColor: colors.blue }]} />
-                      <Text style={styles.legendText}>HR</Text>
+                      <Text style={styles.legendText}>Private</Text>
                     </View>
                     <View style={styles.legendItem}>
                       <View style={[styles.dot, { backgroundColor: colors.cyan }]} />
-                      <Text style={styles.legendText}>SpO2</Text>
+                      <Text style={styles.legendText}>Secure</Text>
                     </View>
                     <View style={styles.legendItem}>
                       <View style={[styles.dot, { backgroundColor: colors.green }]} />
-                      <Text style={styles.legendText}>Verified</Text>
+                      <Text style={styles.legendText}>Patient care</Text>
                     </View>
                   </View>
                   <View style={styles.lang}>
@@ -115,12 +115,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: 24,
   },
   panel: {
-    flexGrow: 1,
     width: '100%',
-    maxWidth: 430,
+    maxWidth: 480,
     alignSelf: 'center',
     overflow: 'hidden',
     borderRadius: 32,
@@ -136,10 +135,10 @@ const styles = StyleSheet.create({
   panelContent: {
     flex: 1,
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 18,
-    gap: 14,
+    paddingHorizontal: 24,
+    paddingTop: 28,
+    paddingBottom: 24,
+    gap: 22,
     zIndex: 1,
   },
   cornerTop: {
@@ -170,7 +169,7 @@ const styles = StyleSheet.create({
   unit: {
     flex: 1,
     textAlign: 'right',
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '700',
     letterSpacing: 0.7,
     color: colors.slateSoft,
@@ -181,23 +180,25 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   logo: {
-    width: 58,
-    height: 58,
-    borderRadius: 18,
+    width: 72,
+    height: 72,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.white,
-    borderColor: colors.teal,
+    backgroundColor: colors.blueSoft,
+    borderColor: colors.border,
     borderWidth: 2,
   },
   hospital: {
-    fontSize: 23,
+    textAlign: 'center',
+    fontSize: 30,
     fontWeight: '800',
     color: colors.navy,
     letterSpacing: -0.3,
   },
   portal: {
-    fontSize: 11,
+    textAlign: 'center',
+    fontSize: 12,
     fontWeight: '700',
     letterSpacing: 1.1,
     color: colors.slateSoft,
@@ -213,8 +214,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   legend: {
+    flex: 1,
+    flexWrap: 'wrap',
     flexDirection: 'row',
-    gap: spacing.lg,
+    gap: spacing.sm,
   },
   legendItem: {
     flexDirection: 'row',
@@ -227,7 +230,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   legendText: {
-    fontSize: 11,
+    fontSize: 12,
     color: colors.slate,
     fontWeight: '600',
   },
@@ -243,7 +246,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
   },
   langText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '700',
     color: colors.slate,
   },

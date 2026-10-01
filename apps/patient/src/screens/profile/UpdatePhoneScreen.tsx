@@ -1,5 +1,6 @@
+import { Text } from '../../components/AppText';
 import { useState } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Phone } from 'lucide-react-native';
 import { AuthShell } from '../../components/AuthShell';
@@ -17,6 +18,7 @@ export function UpdatePhoneScreen({ navigation }: Props) {
   const { dashboard, requestPhoneChange, busy, error } = usePatient();
   const patient = dashboard?.patient;
   const [phone, setPhone] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
 
   if (!patient) {
     return (
@@ -50,14 +52,29 @@ export function UpdatePhoneScreen({ navigation }: Props) {
         icon={<Phone size={18} color={colors.slate} />}
       />
 
-      <ErrorText message={error} />
+      <ErrorText message={formError ?? error} />
 
       <GradientButton
         label="Send verification code →"
         loading={busy}
         onPress={async () => {
           try {
-            await requestPhoneChange(phone.trim());
+            setFormError(null);
+            const digits = phone.replace(/\D/g, '');
+            const local = digits.startsWith('94')
+              ? digits.slice(2)
+              : digits.startsWith('0')
+                ? digits.slice(1)
+                : digits;
+            if (!/^7\d{8}$/.test(local)) {
+              setFormError('Enter a valid Sri Lankan mobile number.');
+              return;
+            }
+            if (local === localPhoneFromE164(patient.phoneE164)) {
+              setFormError('Enter a different phone number.');
+              return;
+            }
+            await requestPhoneChange(local);
             navigation.navigate('PhoneOtp');
           } catch {
             /* context */
@@ -75,7 +92,7 @@ export function UpdatePhoneScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: '800',
     color: colors.navy,
     marginTop: 8,
@@ -86,6 +103,6 @@ const styles = StyleSheet.create({
   },
   body: {
     color: colors.slate,
-    lineHeight: 20,
+    lineHeight: 24,
   },
 });

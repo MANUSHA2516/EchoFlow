@@ -1,5 +1,6 @@
+import { Text } from './AppText';
 import { ReactNode } from 'react';
-import { StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { StyleSheet, View, ViewStyle } from 'react-native';
 import { colors } from '../theme/colors';
 import { radii, spacing } from '../theme/spacing';
 
@@ -39,7 +40,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
   },
   text: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800',
     letterSpacing: 0.6,
   },

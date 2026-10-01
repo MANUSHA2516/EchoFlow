@@ -1,11 +1,12 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text } from './AppText';
+import { StyleSheet, View } from 'react-native';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
 
 export function ErrorText({ message }: { message?: string | null }) {
   if (!message) return null;
   return (
-    <View style={styles.wrap}>
+    <View accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.wrap}>
       <Text style={styles.text}>{message}</Text>
     </View>
   );
@@ -21,7 +22,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: '#B91C1C',
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '600',
   },
 });

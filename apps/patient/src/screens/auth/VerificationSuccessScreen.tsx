@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text } from '../../components/AppText';
+import { StyleSheet, View } from 'react-native';
 import { useEffect } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { CheckCircle2 } from 'lucide-react-native';
@@ -66,7 +67,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    fontSize: 26,
+    fontSize: 30,
     fontWeight: '800',
     color: colors.navy,
     textAlign: 'center',
@@ -78,12 +79,12 @@ const styles = StyleSheet.create({
   body: {
     textAlign: 'center',
     color: colors.slate,
-    lineHeight: 22,
+    lineHeight: 26,
     paddingHorizontal: spacing.md,
   },
   note: {
     textAlign: 'center',
     color: colors.slateSoft,
-    fontSize: 13,
+    fontSize: 15,
   },
 });

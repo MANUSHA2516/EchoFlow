@@ -1,11 +1,6 @@
+import { Text } from './AppText';
 import { ReactNode, useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TextInputProps,
-  View,
-} from 'react-native';
+import { StyleSheet, TextInput, TextInputProps, View } from 'react-native';
 import { colors } from '../theme/colors';
 import { radii, spacing } from '../theme/spacing';
 
@@ -36,6 +31,7 @@ export function TextField({
         {icon ? <View style={styles.icon}>{icon}</View> : null}
         {prefix ? <Text style={styles.prefix}>{prefix}</Text> : null}
         <TextInput
+          {...rest}
           placeholderTextColor={colors.slateSoft}
           editable={!locked && rest.editable !== false}
           accessibilityLabel={label}
@@ -48,7 +44,6 @@ export function TextField({
             onBlur?.(event);
           }}
           style={[styles.input, style]}
-          {...rest}
         />
         {right ? <View style={styles.right}>{right}</View> : null}
       </View>
@@ -61,14 +56,13 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   label: {
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: '700',
-    letterSpacing: 0.8,
+    letterSpacing: 0.1,
     color: colors.slate,
-    textTransform: 'uppercase',
   },
   field: {
-    minHeight: 52,
+    minHeight: 60,
     borderRadius: radii.md,
     borderWidth: 1,
     borderColor: colors.border,
@@ -91,12 +85,13 @@ const styles = StyleSheet.create({
   prefix: {
     color: colors.navy,
     fontWeight: '700',
-    fontSize: 15,
+    fontSize: 17,
   },
   input: {
     flex: 1,
+    minWidth: 0,
     color: colors.navy,
-    fontSize: 15,
+    fontSize: 17,
     paddingVertical: spacing.md,
   },
   right: {

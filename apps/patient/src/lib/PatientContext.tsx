@@ -135,6 +135,9 @@ export function PatientProvider({ children }: { children: React.ReactNode }) {
         if (cancelled) return;
         setDashboard(null);
         setAuthenticated(false);
+      } catch (e) {
+        if (!cancelled)
+          setError(e instanceof Error ? e.message : 'Could not initialize your session.');
       } finally {
         if (!cancelled) setBooting(false);
       }

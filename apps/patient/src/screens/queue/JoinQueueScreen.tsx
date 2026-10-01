@@ -1,5 +1,6 @@
+import { Text } from '../../components/AppText';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { TIME_SLOT_LABELS, TimeSlot, VisitReason, VISIT_REASON_LABELS } from '@echoflow/types';
 import { ErrorText } from '../../components/ErrorText';
@@ -25,12 +26,17 @@ export function JoinQueueScreen({ navigation }: Props) {
   const [notes, setNotes] = useState('');
   const [reasonOpen, setReasonOpen] = useState(false);
 
+  if (dashboard?.queue.ticketNumber)
+    return (
+      <Screen>
+        <ScreenHeader title="You already have a ticket" onBack={() => navigation.goBack()} />
+        <Text>Your active ticket is {dashboard.queue.ticketNumber}.</Text>
+        <GradientButton label="Open my ticket" onPress={() => navigation.replace('LiveTicket')} />
+      </Screen>
+    );
   return (
     <Screen>
-      <ScreenHeader
-        title="Join today’s queue"
-        onBack={() => navigation.goBack()}
-      />
+      <ScreenHeader title="Join today’s queue" onBack={() => navigation.goBack()} />
 
       <View>
         <Text style={styles.label}>Reason for visit</Text>
@@ -62,6 +68,8 @@ export function JoinQueueScreen({ navigation }: Props) {
             return (
               <Pressable
                 key={s}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
                 onPress={() => setSlot(s)}
                 style={[styles.chip, active && styles.chipActive]}
               >
@@ -79,6 +87,7 @@ export function JoinQueueScreen({ navigation }: Props) {
         value={notes}
         onChangeText={setNotes}
         placeholder="Any symptoms or referral details"
+        maxLength={500}
         multiline
         style={{ minHeight: 80, textAlignVertical: 'top' }}
       />
@@ -110,7 +119,7 @@ export function JoinQueueScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   label: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
     letterSpacing: 0.8,
     color: colors.slate,
@@ -134,7 +143,7 @@ const styles = StyleSheet.create({
   },
   chevron: {
     color: colors.slate,
-    fontSize: 16,
+    fontSize: 18,
   },
   option: {
     paddingVertical: spacing.md,
@@ -172,7 +181,7 @@ const styles = StyleSheet.create({
   note: {
     textAlign: 'center',
     color: colors.slate,
-    fontSize: 13,
-    lineHeight: 20,
+    fontSize: 15,
+    lineHeight: 24,
   },
 });

@@ -1,5 +1,6 @@
+import { Text } from '../../components/AppText';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, StyleSheet, View, useWindowDimensions } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Clock3, Lightbulb } from 'lucide-react-native';
@@ -17,7 +18,7 @@ import type { QueueStackParamList } from '../../navigation/types';
 type Props = NativeStackScreenProps<QueueStackParamList, 'CheckInQr'>;
 
 export function CheckInQrScreen({ navigation }: Props) {
-  const { getCheckIn, refreshCheckIn } = usePatient();
+  const { getCheckIn, refreshCheckIn, usingDemo } = usePatient();
   const { width } = useWindowDimensions();
   const qrSize = Math.min(220, width - 88);
   const [payload, setPayload] = useState('');
@@ -83,7 +84,7 @@ export function CheckInQrScreen({ navigation }: Props) {
       <Text style={styles.intro}>Staff will scan it to confirm you’re on-site</Text>
 
       <View style={styles.qrCard}>
-        {payload ? (
+        {payload && remaining !== '00:00' && !busy ? (
           <View style={styles.qrWrap}>
             <QRCode
               value={payload}
@@ -91,14 +92,17 @@ export function CheckInQrScreen({ navigation }: Props) {
               color={colors.navy}
               backgroundColor={colors.white}
             />
-            <LinearGradient colors={[...gradients.journeyButton]} style={styles.qrLogo}>
-              <Text style={styles.qrLogoText}>EF</Text>
-            </LinearGradient>
           </View>
         ) : (
           <View style={styles.loading}>
             {busy ? <ActivityIndicator color={colors.teal} /> : null}
-            <Text style={styles.loadingText}>{busy ? 'Preparing code…' : 'No code loaded'}</Text>
+            <Text style={styles.loadingText}>
+              {busy
+                ? 'Preparing code…'
+                : remaining === '00:00'
+                  ? 'Code expired. Refresh to try again.'
+                  : 'No code loaded'}
+            </Text>
           </View>
         )}
         <View style={styles.metaRow}>
@@ -120,9 +124,11 @@ export function CheckInQrScreen({ navigation }: Props) {
         <Text style={styles.step}>1. Staff scans this code at reception</Text>
         <Text style={styles.step}>2. Your GPS location is checked against the hospital</Text>
         <Text style={styles.step}>3. You’re marked on-site and may move up the queue</Text>
-        <Text style={styles.demoNote}>
-          Demo mode: staff verification is simulated — not a live GPS geofence.
-        </Text>
+        {usingDemo ? (
+          <Text style={styles.demoNote}>
+            Demo mode: staff verification is simulated — not a live GPS geofence.
+          </Text>
+        ) : null}
       </View>
 
       <GradientButton
@@ -142,19 +148,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   unit: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '800',
     letterSpacing: 0.8,
     color: colors.slateSoft,
   },
   title: {
-    fontSize: 26,
+    fontSize: 30,
     fontWeight: '800',
     color: colors.navy,
   },
   intro: {
     color: colors.slate,
-    lineHeight: 20,
+    lineHeight: 24,
     marginTop: -8,
   },
   qrCard: {
@@ -184,7 +190,7 @@ const styles = StyleSheet.create({
   qrLogoText: {
     color: colors.white,
     fontWeight: '900',
-    fontSize: 14,
+    fontSize: 16,
   },
   loading: {
     minHeight: 220,
@@ -194,6 +200,8 @@ const styles = StyleSheet.create({
   },
   loadingText: { color: colors.slate },
   metaRow: {
+    flexWrap: 'wrap',
+    gap: 12,
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -211,11 +219,12 @@ const styles = StyleSheet.create({
   expiresText: {
     color: colors.blue,
     fontWeight: '700',
-    fontSize: 12,
+    fontSize: 14,
   },
   ticket: {
+    flexShrink: 0,
     fontWeight: '800',
-    fontSize: 22,
+    fontSize: 26,
     color: colors.navy,
     fontVariant: ['tabular-nums'],
   },
@@ -239,12 +248,12 @@ const styles = StyleSheet.create({
   },
   step: {
     color: colors.slate,
-    lineHeight: 20,
+    lineHeight: 24,
   },
   demoNote: {
     marginTop: spacing.sm,
     color: colors.amberDeep,
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
   },
 });

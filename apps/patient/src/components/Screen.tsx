@@ -1,5 +1,13 @@
 import { ReactNode } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, View, ViewStyle } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  View,
+  ViewStyle,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 import { spacing } from '../theme/spacing';
@@ -21,15 +29,22 @@ export function Screen({
   scroll = true,
   refreshing,
   onRefresh,
-  edges = ['top'],
+  edges = ['top', 'left', 'right'],
 }: Props) {
   const body = scroll ? (
     <ScrollView
       contentContainerStyle={[styles.content, contentStyle]}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
       refreshControl={
         onRefresh ? (
-          <RefreshControl refreshing={Boolean(refreshing)} onRefresh={onRefresh} />
+          <RefreshControl
+            tintColor={colors.teal}
+            colors={[colors.teal]}
+            refreshing={Boolean(refreshing)}
+            onRefresh={onRefresh}
+          />
         ) : undefined
       }
     >
@@ -41,7 +56,12 @@ export function Screen({
 
   return (
     <SafeAreaView style={[styles.safe, style]} edges={edges}>
-      {body}
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        {body}
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -54,8 +74,9 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   content: {
     paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.xxxl,
-    gap: spacing.lg,
+    paddingBottom: 40,
+    paddingTop: spacing.md,
+    gap: spacing.xl,
     flexGrow: 1,
     width: '100%',
     maxWidth: 520,

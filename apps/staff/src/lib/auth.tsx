@@ -33,10 +33,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const session = readSession();
-    setAuthenticated(Boolean(session));
-    setAccessToken(session?.accessToken ?? null);
-    setReady(true);
+    // Restore the browser session after hydration; cancel if the provider unmounts.
+    const restore = window.setTimeout(() => {
+      const session = readSession();
+      setAuthenticated(Boolean(session));
+      setAccessToken(session?.accessToken ?? null);
+      setReady(true);
+    }, 0);
+    return () => window.clearTimeout(restore);
   }, []);
 
   const signIn = async (staffId: string, password: string, keep: boolean) => {

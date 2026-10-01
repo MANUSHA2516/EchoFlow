@@ -1,6 +1,7 @@
+import { Text } from './AppText';
 import { useEffect, useState } from 'react';
 import { BrainCircuit, Clock3 } from 'lucide-react-native';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import type { TimeSlot } from '@echoflow/types';
 import { usePatient } from '../lib/PatientContext';
 import type { QueueWaitEstimate } from '../types/patient';
@@ -36,7 +37,11 @@ export function QueueWaitForecast({ slot, queueLength }: Props) {
 
   return (
     <View style={styles.wrap}>
-      {synthetic ? <BrainCircuit size={18} color={colors.blue} /> : <Clock3 size={18} color={colors.teal} />}
+      {synthetic ? (
+        <BrainCircuit size={18} color={colors.blue} />
+      ) : (
+        <Clock3 size={18} color={colors.teal} />
+      )}
       <View style={styles.copy}>
         <Text style={styles.title}>
           {loading
@@ -68,5 +73,5 @@ const styles = StyleSheet.create({
   },
   copy: { flex: 1, gap: 3 },
   title: { color: colors.navy, fontWeight: '700' },
-  note: { color: colors.slate, fontSize: 12, lineHeight: 17 },
+  note: { color: colors.slate, fontSize: 14, lineHeight: 20 },
 });
