@@ -1,20 +1,18 @@
-import { Text } from './AppText';
+import { useEffect, useRef } from 'react';
+import { ActivityIndicator, Animated, Pressable, StyleSheet, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ActivityIndicator, Pressable, StyleSheet, ViewStyle } from 'react-native';
+import { Text } from './AppText';
+import { useMotion } from '../lib/MotionContext';
 import { colors, gradients } from '../theme/colors';
-import { radii, spacing } from '../theme/spacing';
-
-type Variant = 'primary' | 'journey' | 'secondary' | 'danger' | 'ghost';
-
+import { radii } from '../theme/spacing';
 type Props = {
   label: string;
   onPress?: () => void;
   disabled?: boolean;
   loading?: boolean;
-  variant?: Variant;
+  variant?: 'primary' | 'journey' | 'secondary' | 'danger' | 'ghost';
   style?: ViewStyle;
 };
-
 export function GradientButton({
   label,
   onPress,
@@ -23,116 +21,94 @@ export function GradientButton({
   variant = 'primary',
   style,
 }: Props) {
-  if (variant === 'secondary' || variant === 'danger' || variant === 'ghost') {
-    return (
+  const { enabled } = useMotion();
+  const scale = useRef(new Animated.Value(1)).current;
+  const inactive = !!disabled || !!loading;
+  useEffect(() => {
+    if (inactive || !enabled) {
+      scale.stopAnimation();
+      scale.setValue(1);
+    }
+    return () => scale.stopAnimation();
+  }, [enabled, inactive, scale]);
+  const press = (down: boolean) => {
+    if (!enabled || inactive) return;
+    Animated.spring(scale, {
+      toValue: down ? 0.975 : 1,
+      damping: 16,
+      stiffness: 280,
+      mass: 0.6,
+      useNativeDriver: true,
+    }).start();
+  };
+  const primary = variant === 'primary' || variant === 'journey';
+  const foreground = primary ? colors.white : variant === 'danger' ? '#B91C1C' : colors.tealDeep;
+  const content = loading ? (
+    <ActivityIndicator color={foreground} />
+  ) : (
+    <Text style={[styles.label, { color: foreground }]}>{label}</Text>
+  );
+  return (
+    <Animated.View
+      style={[
+        primary && styles.elevated,
+        style,
+        inactive && styles.disabled,
+        { transform: [{ scale }] },
+      ]}
+    >
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={label}
-        accessibilityState={{ disabled: !!disabled || !!loading, busy: !!loading }}
+        accessibilityState={{ disabled: inactive, busy: !!loading }}
+        disabled={inactive}
         onPress={onPress}
-        disabled={disabled || loading}
-        style={[
-          styles.base,
+        onPressIn={() => press(true)}
+        onPressOut={() => press(false)}
+        style={({ pressed }) => [
+          styles.pressable,
+          !primary && styles.base,
           variant === 'secondary' && styles.secondary,
           variant === 'danger' && styles.danger,
-          variant === 'ghost' && styles.ghost,
-          (disabled || loading) && styles.disabled,
-          style,
+          pressed && { opacity: 0.88 },
         ]}
       >
-        {loading ? (
-          <ActivityIndicator color={variant === 'danger' ? colors.red : colors.teal} />
-        ) : (
-          <Text
-            style={[
-              styles.label,
-              variant === 'secondary' && styles.secondaryLabel,
-              variant === 'danger' && styles.dangerLabel,
-              variant === 'ghost' && styles.ghostLabel,
-            ]}
+        {primary ? (
+          <LinearGradient
+            colors={[...(variant === 'journey' ? gradients.journeyButton : gradients.authButton)]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.base}
           >
-            {label}
-          </Text>
+            {content}
+          </LinearGradient>
+        ) : (
+          content
         )}
       </Pressable>
-    );
-  }
-
-  const colorsFor = variant === 'journey' ? gradients.journeyButton : gradients.authButton;
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityState={{ disabled: !!disabled || !!loading, busy: !!loading }}
-      onPress={onPress}
-      disabled={disabled || loading}
-      style={({ pressed }) => [
-        styles.pressable,
-        pressed && { opacity: 0.85, transform: [{ scale: 0.985 }] },
-        (disabled || loading) && styles.disabled,
-        style,
-      ]}
-    >
-      <LinearGradient
-        colors={[...colorsFor]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.base}
-      >
-        {loading ? (
-          <ActivityIndicator color={colors.white} />
-        ) : (
-          <Text style={styles.label}>{label}</Text>
-        )}
-      </LinearGradient>
-    </Pressable>
+    </Animated.View>
   );
 }
-
 const styles = StyleSheet.create({
-  pressable: {
+  elevated: {
+    shadowColor: colors.tealDeep,
+    shadowOpacity: 0.16,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
     borderRadius: radii.lg,
-    overflow: 'hidden',
   },
+  pressable: { borderRadius: radii.lg, overflow: 'hidden' },
   base: {
     minHeight: 58,
     borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: 16,
     paddingVertical: 14,
   },
-  label: {
-    color: colors.white,
-    fontSize: 17,
-    textAlign: 'center',
-    fontWeight: '700',
-  },
-  secondary: {
-    backgroundColor: colors.white,
-    borderWidth: 1.5,
-    borderColor: colors.blue,
-  },
-  secondaryLabel: {
-    color: colors.tealDeep,
-  },
-  danger: {
-    backgroundColor: colors.redSoft,
-    borderWidth: 1,
-    borderColor: '#FECACA',
-  },
-  dangerLabel: {
-    color: '#B91C1C',
-  },
-  ghost: {
-    backgroundColor: 'transparent',
-  },
-  ghostLabel: {
-    color: colors.blue,
-    fontWeight: '600',
-  },
-  disabled: {
-    opacity: 0.55,
-  },
+  label: { fontSize: 17, textAlign: 'center', fontWeight: '700' },
+  secondary: { backgroundColor: colors.white, borderWidth: 1, borderColor: '#BDDCE8' },
+  danger: { backgroundColor: colors.redSoft, borderWidth: 1, borderColor: '#FECACA' },
+  disabled: { opacity: 0.55 },
 });

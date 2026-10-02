@@ -1,3 +1,5 @@
+import { Entrance } from './Motion';
+import { LinearGradient } from 'expo-linear-gradient';
 import { ReactNode } from 'react';
 import {
   KeyboardAvoidingView,
@@ -56,12 +58,19 @@ export function Screen({
 
   return (
     <SafeAreaView style={[styles.safe, style]} edges={edges}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        {body}
-      </KeyboardAvoidingView>
+      <LinearGradient
+        pointerEvents="none"
+        colors={[colors.blueSoft, colors.surface]}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 260, opacity: 0.55 }}
+      />
+      <Entrance style={styles.flex}>
+        <KeyboardAvoidingView
+          style={styles.flex}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          {body}
+        </KeyboardAvoidingView>
+      </Entrance>
     </SafeAreaView>
   );
 }

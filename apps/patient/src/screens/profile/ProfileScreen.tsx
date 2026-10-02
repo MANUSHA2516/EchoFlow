@@ -1,5 +1,6 @@
+import { HeroDecoration } from '../../components/Motion';
 import { Text } from '../../components/AppText';
-import { Image, StyleSheet, View } from 'react-native';
+import { Image, StyleSheet, Switch, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Calendar, MapPin, Phone } from 'lucide-react-native';
@@ -8,6 +9,7 @@ import { ErrorText } from '../../components/ErrorText';
 import { GradientButton } from '../../components/GradientButton';
 import { Screen } from '../../components/Screen';
 import { formatDob, formatPhoneDisplay, initials } from '../../lib/format';
+import { useMotion } from '../../lib/MotionContext';
 import { usePatient } from '../../lib/PatientContext';
 import { colors, gradients } from '../../theme/colors';
 import { radii, spacing } from '../../theme/spacing';
@@ -18,6 +20,7 @@ type Props = NativeStackScreenProps<ProfileStackParamList, 'ProfileHome'>;
 export function ProfileScreen({ navigation }: Props) {
   const { dashboard, logout, busy, error } = usePatient();
   const patient = dashboard?.patient;
+  const motion = useMotion();
 
   if (!patient) {
     return (
@@ -30,6 +33,7 @@ export function ProfileScreen({ navigation }: Props) {
   return (
     <Screen contentStyle={{ paddingHorizontal: 0 }}>
       <LinearGradient colors={[...gradients.header]} style={styles.header}>
+        <HeroDecoration />
         <View style={styles.avatar}>
           <>
             {patient.avatarUrl ? (
@@ -91,6 +95,26 @@ export function ProfileScreen({ navigation }: Props) {
           label="Edit details"
           onPress={() => navigation.navigate('EditProfile')}
         />
+        <Card>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 18, fontWeight: '800' }}>Gentle animations</Text>
+              <Text style={{ fontSize: 14, color: colors.slate, marginTop: 4 }}>
+                {motion.systemReduced
+                  ? 'Reduced motion is enabled on your device.'
+                  : 'Smooth transitions and subtle live indicators.'}
+              </Text>
+            </View>
+            <Switch
+              accessibilityLabel="Gentle animations"
+              value={motion.allowed && !motion.systemReduced}
+              disabled={motion.systemReduced}
+              onValueChange={motion.setAllowed}
+              trackColor={{ false: colors.border, true: colors.teal }}
+              thumbColor={colors.white}
+            />
+          </View>
+        </Card>
         <GradientButton
           variant="danger"
           label="Log out"
@@ -126,6 +150,7 @@ function Detail({
 
 const styles = StyleSheet.create({
   header: {
+    overflow: 'hidden',
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.xl,
     paddingBottom: spacing.xxxl,

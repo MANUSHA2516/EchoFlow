@@ -1,11 +1,11 @@
+import { HeroDecoration, PulseDot } from '../../components/Motion';
 import { Text } from '../../components/AppText';
 import { useCallback, useRef, useState } from 'react';
-import { StyleSheet, View, Pressable } from 'react-native';
+import { StyleSheet, View, Pressable, useWindowDimensions } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AlertTriangle, Check, QrCode, UserRound } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Card } from '../../components/Card';
 import { ErrorText } from '../../components/ErrorText';
 import { GradientButton } from '../../components/GradientButton';
 import { Screen } from '../../components/Screen';
@@ -23,7 +23,10 @@ export function LiveQueueScreen({ navigation }: Props) {
   const { dashboard, refreshDashboard, error } = usePatient();
   const [refreshing, setRefreshing] = useState(false);
   const inFlight = useRef(false);
+  const { width, fontScale } = useWindowDimensions();
+  const compact = width < 370 || fontScale > 1.2;
   const queue = dashboard?.queue;
+  const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
 
   const refresh = useCallback(
     async (showSpinner = true) => {
@@ -32,6 +35,7 @@ export function LiveQueueScreen({ navigation }: Props) {
       if (showSpinner) setRefreshing(true);
       try {
         await refreshDashboard();
+        setUpdatedAt(new Date());
       } catch {
         // Keep the last known queue visible and show the request error below.
       } finally {
@@ -55,9 +59,24 @@ export function LiveQueueScreen({ navigation }: Props) {
       <ScreenHeader
         title="Live queue tracking"
         onBack={navigation.canGoBack() ? () => navigation.goBack() : undefined}
-        right={<StatusBadge label="LIVE" tone="green" />}
+        right={
+          <StatusBadge
+            icon={<PulseDot color={error ? colors.amber : colors.green} />}
+            label={error ? 'RETRY' : 'LIVE'}
+            tone={error ? 'amber' : 'green'}
+          />
+        }
       />
 
+      <Text style={{ color: colors.slate, fontSize: 13 }}>
+        {error
+          ? 'Showing your last available queue. Pull down to retry.'
+          : updatedAt
+            ? 'Updated ' +
+              updatedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) +
+              ' / Refreshes every 15 seconds'
+            : 'Connecting to your queue...'}
+      </Text>
       <ErrorText message={error} />
 
       {!queue?.ticketNumber ? (
@@ -71,25 +90,78 @@ export function LiveQueueScreen({ navigation }: Props) {
         </>
       ) : (
         <>
-          <Card style={styles.summaryCard}>
-            <View style={styles.summaryRow}>
-              <View style={styles.summaryCol}>
-                <Text style={styles.caps}>QUEUE NUMBER</Text>
-                <Text style={styles.ticket}>{queue.ticketNumber}</Text>
+          <LinearGradient
+            colors={[...gradients.ticket]}
+            style={{ borderRadius: 30, padding: 24, overflow: 'hidden', gap: 22 }}
+          >
+            <HeroDecoration />
+            <View
+              style={{
+                flexDirection: compact ? 'column' : 'row',
+                alignItems: compact ? 'stretch' : 'center',
+                gap: 12,
+              }}
+            >
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Text
+                  style={{ color: '#C7E9EF', fontSize: 11, fontWeight: '700', letterSpacing: 1.4 }}
+                >
+                  YOUR PLACE IN LINE
+                </Text>
+                <Text
+                  style={{
+                    color: colors.white,
+                    fontSize: 40,
+                    fontWeight: '800',
+                    letterSpacing: -1.5,
+                  }}
+                  adjustsFontSizeToFit
+                  numberOfLines={1}
+                >
+                  {queue.ticketNumber}
+                </Text>
               </View>
-              <View style={styles.circle}>
-                <Text style={styles.circleValue}>{queue.patientsAhead}</Text>
-                <Text style={styles.circleLabel}>People ahead</Text>
-              </View>
-              <View style={[styles.summaryCol, { alignItems: 'flex-end' }]}>
-                <Text style={styles.caps}>YOUR STATUS</Text>
-                <View style={styles.statusPill}>
-                  <Text style={styles.statusText}>In Queue</Text>
-                </View>
+              <View
+                style={{
+                  alignItems: 'center',
+                  flexDirection: compact ? 'row' : 'column',
+                  justifyContent: 'space-between',
+                  gap: compact ? 12 : 0,
+                  backgroundColor: '#FFFFFF18',
+                  borderWidth: 1,
+                  borderColor: '#FFFFFF25',
+                  borderRadius: 22,
+                  padding: 14,
+                }}
+              >
+                <Text style={{ color: colors.white, fontSize: 32, fontWeight: '800' }}>
+                  {queue.patientsAhead}
+                </Text>
+                <Text style={{ color: '#D6EDF2', fontSize: 12 }}>People ahead</Text>
               </View>
             </View>
-          </Card>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <PulseDot color="#9AE3DC" />
+              <Text style={{ color: colors.white, fontSize: 14, fontWeight: '600' }}>
+                {queue.onSite ? 'Checked in at hospital' : 'Waiting for your turn'}
+              </Text>
+            </View>
+          </LinearGradient>
 
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <GradientButton
+              label="My ticket"
+              variant="journey"
+              style={{ flex: 1 }}
+              onPress={() => navigation.navigate('LiveTicket')}
+            />
+            <GradientButton
+              label="Updates"
+              variant="secondary"
+              style={{ flex: 1 }}
+              onPress={() => navigation.navigate('Notifications')}
+            />
+          </View>
           {queue.slot ? (
             <QueueWaitForecast slot={queue.slot} queueLength={queue.patientsAhead} />
           ) : null}

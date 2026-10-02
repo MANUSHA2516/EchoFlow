@@ -1,3 +1,4 @@
+import { AnimatedProgress } from './AnimatedProgress';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Check, ClipboardCheck } from 'lucide-react-native';
@@ -24,9 +25,17 @@ export function VisitChecklist() {
           </Text>
         </View>
       </View>
-      <View style={styles.track}>
-        <View style={[styles.fill, { width: `${(checked.length / items.length) * 100}%` }]} />
+      <View style={{ marginVertical: 18 }}>
+        <AnimatedProgress value={checked.length / items.length} label="Visit preparation" />
       </View>
+      {checked.length === items.length && (
+        <Text
+          accessibilityLiveRegion="polite"
+          style={{ color: colors.tealDeep, fontWeight: '700', marginBottom: 8 }}
+        >
+          All set. Your visit essentials are ready.
+        </Text>
+      )}
       {items.map((item, i) => (
         <Pressable
           key={item}

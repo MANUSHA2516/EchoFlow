@@ -1,3 +1,5 @@
+import { AnimatedProgress } from '../../components/AnimatedProgress';
+import { HeroDecoration, PulseDot } from '../../components/Motion';
 import { Text } from '../../components/AppText';
 import { useCallback, useRef, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
@@ -67,10 +69,11 @@ export function LiveTicketScreen({ navigation }: Props) {
       <ScreenHeader title="Your number" onBack={() => navigation.navigate('QueueHome')} />
 
       <LinearGradient colors={[...gradients.ticket]} style={styles.ticketCard}>
+        <HeroDecoration />
         <View style={styles.ticketTop}>
           <Text style={styles.yourNumber}>Your number</Text>
           <View style={styles.livePill}>
-            <View style={styles.liveDot} />
+            <PulseDot color={colors.cyan} />
             <Text style={styles.liveText}>LIVE UPDATES</Text>
           </View>
         </View>
@@ -92,13 +95,8 @@ export function LiveTicketScreen({ navigation }: Props) {
           </View>
           <Text style={styles.servingNo}>{queue.currentlyServing ?? '—'}</Text>
         </View>
-        <View style={styles.barTrack}>
-          <LinearGradient
-            colors={[colors.amber, colors.teal]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={[styles.barFill, { width: `${progress * 100}%` }]}
-          />
+        <View style={{ marginTop: 16 }}>
+          <AnimatedProgress value={progress} label="Queue progress" />
         </View>
         <View style={styles.statsRow}>
           <Text style={styles.stat}>{queue.patientsAhead} ahead of you</Text>
@@ -159,6 +157,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   ticketCard: {
+    overflow: 'hidden',
     borderRadius: radii.xl,
     padding: spacing.xl,
     gap: spacing.md,

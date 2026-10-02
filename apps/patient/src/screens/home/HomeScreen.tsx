@@ -1,3 +1,4 @@
+import { HeroDecoration, PulseDot } from '../../components/Motion';
 import { Text } from '../../components/AppText';
 import { useCallback, useRef } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
@@ -59,6 +60,7 @@ export function HomeScreen({ navigation }: Props) {
       }}
     >
       <LinearGradient colors={[...gradients.header]} style={styles.header}>
+        <HeroDecoration />
         <View style={styles.headerRow}>
           <View style={{ flex: 1, gap: 4 }}>
             <Text style={{ color: '#C7E9EF', fontSize: 12, fontWeight: '700', letterSpacing: 1.5 }}>
@@ -114,7 +116,7 @@ export function HomeScreen({ navigation }: Props) {
         <Card>
           <View style={styles.liveRow}>
             <View style={styles.liveBadge}>
-              <View style={styles.liveDot} />
+              <PulseDot color={colors.cyan} />
               <Text style={styles.liveLabel}>LIVE · CURRENTLY SERVING</Text>
             </View>
           </View>
@@ -194,6 +196,7 @@ const styles = StyleSheet.create({
     color: colors.slate,
   },
   header: {
+    overflow: 'hidden',
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.lg,
     paddingBottom: 44,

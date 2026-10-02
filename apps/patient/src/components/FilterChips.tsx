@@ -23,7 +23,11 @@ export function FilterChips({
           accessibilityRole="button"
           accessibilityState={{ selected: value === option }}
           onPress={() => onChange(option)}
-          style={[styles.chip, value === option && styles.active]}
+          style={({ pressed }) => [
+            styles.chip,
+            value === option && styles.active,
+            pressed && { opacity: 0.8 },
+          ]}
         >
           <Text style={[styles.label, value === option && styles.selected]}>{option}</Text>
         </Pressable>

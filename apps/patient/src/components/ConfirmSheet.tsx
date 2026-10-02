@@ -1,3 +1,4 @@
+import { useMotion } from '../lib/MotionContext';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from './AppText';
@@ -20,11 +21,12 @@ export function ConfirmSheet({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const motion = useMotion();
   return (
     <Modal
       visible={visible}
       transparent
-      animationType="fade"
+      animationType={motion.enabled ? 'fade' : 'none'}
       onRequestClose={() => {
         if (!busy) onCancel();
       }}

@@ -1,3 +1,5 @@
+import { Entrance } from './Motion';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Text } from './AppText';
 import { ReactNode } from 'react';
 import {
@@ -39,6 +41,11 @@ export function AuthShell({
   const waveWidth = Math.min(width - 84, 300);
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+      <LinearGradient
+        pointerEvents="none"
+        colors={[colors.blueSoft, colors.surface, colors.mint]}
+        style={StyleSheet.absoluteFill}
+      />
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -49,7 +56,7 @@ export function AuthShell({
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.panel}>
+          <Entrance style={styles.panel}>
             <View pointerEvents="none" style={styles.cornerTop} />
             <View pointerEvents="none" style={styles.cornerBottom} />
             <View style={styles.panelContent}>
@@ -98,7 +105,7 @@ export function AuthShell({
                 </View>
               ) : null}
             </View>
-          </View>
+          </Entrance>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -186,8 +193,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.blueSoft,
-    borderColor: colors.border,
-    borderWidth: 2,
+    borderColor: '#CDE5ED',
+    borderWidth: 1,
+    shadowColor: colors.teal,
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
   },
   hospital: {
     textAlign: 'center',
