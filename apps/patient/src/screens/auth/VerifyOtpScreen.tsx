@@ -16,7 +16,7 @@ import type { AuthStackParamList } from '../../navigation/types';
 type Props = NativeStackScreenProps<AuthStackParamList, 'VerifyOtp'>;
 
 export function VerifyOtpScreen({ navigation }: Props) {
-  const { pendingOtp, verifyOtp, resendOtp, busy, error, usingDemo, demoOtp } = usePatient();
+  const { pendingOtp, verifyOtp, resendOtp, busy, error } = usePatient();
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const [seconds, setSeconds] = useState(30);
   const inputs = useRef<Array<TextInput | null>>([]);
@@ -63,11 +63,6 @@ export function VerifyOtpScreen({ navigation }: Props) {
         <EcgWave width={260} height={32} />
       </View>
 
-      {usingDemo && (
-        <Text style={{ textAlign: 'center', color: colors.tealDeep, fontSize: 14 }}>
-          Demo verification code: {demoOtp}
-        </Text>
-      )}
       <Text style={styles.codeLabel}>VERIFICATION CODE</Text>
       <View style={styles.otpRow}>
         {digits.map((d, i) => (

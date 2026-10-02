@@ -15,7 +15,7 @@ import type { ProfileStackParamList } from '../../navigation/types';
 type Props = NativeStackScreenProps<ProfileStackParamList, 'PhoneOtp'>;
 
 export function PhoneOtpScreen({ navigation }: Props) {
-  const { pendingOtp, verifyOtp, resendOtp, busy, error, usingDemo, demoOtp } = usePatient();
+  const { pendingOtp, verifyOtp, resendOtp, busy, error } = usePatient();
   const [digits, setDigits] = useState(['', '', '', '', '', '']);
   const [seconds, setSeconds] = useState(30);
   const inputs = useRef<Array<TextInput | null>>([]);
@@ -60,11 +60,6 @@ export function PhoneOtpScreen({ navigation }: Props) {
         </Text>
       </View>
 
-      {usingDemo && (
-        <Text style={{ textAlign: 'center', color: colors.tealDeep, fontSize: 14 }}>
-          Demo verification code: {demoOtp}
-        </Text>
-      )}
       <View style={styles.otpRow}>
         {digits.map((d, i) => (
           <TextInput
