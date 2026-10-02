@@ -462,3 +462,84 @@ a {
   .staff-card { box-shadow: none; break-inside: avoid; }
   body, .staff-layout { background: white; }
 }
+
+/* The selected workspace supplies the login palette; dashboard styles stay scoped. */
+.staff-auth-page[data-login-role] {
+  --login-glow: #13558f26;
+  --login-focus: #1671a814;
+}
+.staff-auth-page[data-login-role='admin'] {
+  --staff-teal: #0b817a;
+  --staff-teal-dark: #075e5a;
+  --staff-teal-soft: #e9f7f5;
+  --staff-cyan: #0a716b;
+  --staff-navy: #17243b;
+  --staff-surface: #f5f8f8;
+  --login-glow: #0b817a26;
+  --login-focus: #0b817a14;
+}
+.staff-auth-page[data-login-role='admin'] .staff-auth-hero {
+  background: radial-gradient(circle at 80% 20%, #2ba99b55, transparent 35%), linear-gradient(145deg, #064f4d, #0a716b 65%, #0b817a);
+}
+.staff-auth-page[data-login-role='admin'] .staff-auth-side {
+  background: radial-gradient(ellipse at top right, #e9f7f580, transparent 65%), #fff;
+}
+.staff-auth-page[data-login-role] .staff-button--primary { box-shadow: 0 4px 12px var(--login-glow); }
+.staff-auth-page[data-login-role] .staff-button--primary:hover:not(:disabled) { box-shadow: 0 6px 16px var(--login-glow); }
+.staff-auth-page[data-login-role] .staff-input:focus { box-shadow: 0 0 0 3px var(--login-focus); }
+.staff-auth-page[data-login-role] :focus-visible { outline-color: var(--staff-teal); }
+.staff-auth-page[data-login-role='admin'] ::selection { color: #fff; background: #075e5a; }
+/* Compact account selector. */
+.staff-auth-role-tabs {
+  position: relative;
+  isolation: isolate;
+  display: inline-grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+  width: 224px;
+  max-width: 100%;
+  margin-top: 22px;
+  padding: 4px;
+  border: 1px solid var(--staff-border);
+  border-radius: 999px;
+  background: var(--staff-surface);
+}
+.staff-auth-role-tabs::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 4px auto 4px 4px;
+  width: calc((100% - 12px) / 2);
+  border-radius: 999px;
+  background: var(--staff-teal);
+  box-shadow: 0 2px 5px var(--login-glow);
+  transition: transform 200ms cubic-bezier(.2,.8,.2,1), background 160ms;
+}
+.staff-auth-page[data-login-role='admin'] .staff-auth-role-tabs::before { transform: translateX(calc(100% + 4px)); }
+.staff-auth-role-tabs [role='tab'] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+  min-height: 34px;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--staff-muted);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.4;
+  transition: color 160ms;
+}
+.staff-auth-role-tabs [role='tab'] svg { flex: 0 0 auto; }
+.staff-auth-role-tabs [role='tab']:hover:not([aria-selected='true']) { color: var(--staff-teal-dark); }
+.staff-auth-role-tabs [aria-selected='true'] { color: #fff; }
+.staff-auth-role-tabs [role='tab']:focus-visible { outline: 2px solid var(--staff-teal); outline-offset: 3px; }
+.staff-auth-role-tabs [role='tab']:disabled { cursor: wait; }
+.staff-auth-role-panel .staff-auth-form { margin-top: 22px; }
+@media (prefers-reduced-motion: reduce) {
+  .staff-auth-role-tabs::before,
+  .staff-auth-role-tabs [role='tab'] { transition: none; }
+}

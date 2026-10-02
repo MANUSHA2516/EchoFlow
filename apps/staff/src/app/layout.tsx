@@ -4,8 +4,8 @@ import { PatientRegisterProvider } from '@/lib/patient-register';
 import { AuthProvider } from '@/lib/auth';
 
 export const metadata: Metadata = {
-  title: 'EchoFlow Staff',
-  description: 'Staff web portal for live ECHO queue operations',
+  title: 'EchoFlow Web',
+  description: 'Staff and administrator portal for ECHO unit operations',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

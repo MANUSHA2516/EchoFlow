@@ -42,9 +42,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return () => { document.removeEventListener('pointerdown', close); document.removeEventListener('keydown', escape); };
   }, []);
 
-  const logout = () => {
-    signOut();
+  const logout = async () => {
+    await signOut();
     router.replace('/login');
+    router.refresh();
   };
 
   return (

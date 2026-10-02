@@ -4,7 +4,7 @@ import {
   ExecutionContext,
   Injectable,
   SetMetadata,
-  UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
@@ -37,7 +37,7 @@ export class RolesGuard implements CanActivate {
     ]);
     if (!roles?.length) return true;
     const user = context.switchToHttp().getRequest<{ user?: AuthUser }>().user;
-    if (!user || !roles.includes(user.role)) throw new UnauthorizedException('Insufficient role');
+    if (!user || !roles.includes(user.role)) throw new ForbiddenException('Insufficient role');
     return true;
   }
 }

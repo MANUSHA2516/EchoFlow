@@ -32,8 +32,8 @@ Patient (Expo / React Native) · Staff / Admin (Next.js)
 
 ```text
 apps/patient   EchoFlow Patient (Expo React Native mobile app)
-apps/staff     EchoFlow Staff portal (Next.js)
-apps/admin     EchoFlow Admin portal (Next.js)
+apps/staff     Shared Staff / Admin web portal (Next.js, one login)
+apps/admin     Legacy admin address, redirects to the shared portal
 services/api   NestJS + MongoDB + Socket.IO
 services/ml    FastAPI prediction service
 packages/      Shared types, UI primitives, config, tsconfig, eslint
@@ -144,3 +144,9 @@ Progressive: API unit/service/e2e, critical frontend flows, then full patient/st
 ## License / academic use
 
 University research project artefact. Patient data in seeds is fictional.
+
+## Shared staff/admin login
+
+Run `pnpm --filter @echoflow/staff dev` and open http://localhost:3001/login.
+Staff accounts open the existing staff dashboard; administrators open `/admin`. Both retain their existing themes.
+See [web portal setup and demo credentials](apps/staff/README.md).

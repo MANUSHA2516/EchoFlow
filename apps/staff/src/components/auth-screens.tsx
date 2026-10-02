@@ -7,6 +7,7 @@ import { Activity, ArrowLeft, BarChart3, CheckCircle2, Clock3, Eye, EyeOff, Lock
 import type { LucideIcon } from 'lucide-react';
 import { Button, Field } from './ui';
 import { useAuth } from '@/lib/auth';
+import { destinationFor } from '@/lib/access-policy';
 
 function BrandPanel() {
   const stats: Array<[string, string, LucideIcon]> = [
@@ -16,7 +17,7 @@ function BrandPanel() {
   ];
   return (
     <section className="staff-auth-hero">
-      <div className="staff-auth-brand"><span className="staff-auth-brand-mark"><Activity size={20} /></span><span><b>EchoFlow</b><small>Staff Portal</small></span></div>
+      <div className="staff-auth-brand"><span className="staff-auth-brand-mark"><Activity size={20} /></span><span><b>EchoFlow</b><small>Web Portal</small></span></div>
       <div className="staff-auth-message">
         <p className="staff-auth-kicker">Echocardiography Unit</p>
         <h1>A calmer queue.<br />Better patient flow.</h1>
@@ -33,45 +34,86 @@ function BrandPanel() {
 export function LoginScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { authenticated, signIn } = useAuth();
+  const { authenticated, role, signIn } = useAuth();
+  const [loginRole, setLoginRole] = useState<'staff' | 'admin'>('staff');
   const [staffId, setStaffId] = useState('ECHO-STF-001');
+  const [adminId, setAdminId] = useState('ECHO-ADM-014');
   const [password, setPassword] = useState('EchoFlow!demo');
   const [keep, setKeep] = useState(true);
   const [show, setShow] = useState(false);
   const [error, setError] = useState('');
   const [sso, setSso] = useState('');
+  const [code, setCode] = useState('');
+  const [busy, setBusy] = useState(false);
+  const admin = loginRole === 'admin';
+  const accountId = admin ? adminId : staffId;
+
+  const selectRole = (selected: 'staff' | 'admin') => {
+    if (busy || selected === loginRole) return;
+    setLoginRole(selected);
+    setError('');
+    setSso('');
+    setCode('');
+    setShow(false);
+  };
+
+  const handleRoleKey = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    if (busy) return;
+    const selected = event.key === 'Home' ? 'staff' : event.key === 'End' ? 'admin' : admin ? 'staff' : 'admin';
+    selectRole(selected);
+    document.getElementById(`login-tab-${selected}`)?.focus();
+  };
 
   useEffect(() => {
-    if (authenticated) router.replace(searchParams.get('next') || '/');
-  }, [authenticated, router, searchParams]);
+    if (authenticated && role) router.replace(destinationFor(role, searchParams.get('next')));
+  }, [authenticated, role, router, searchParams]);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const ok = await signIn(staffId, password, keep);
-    if (ok) router.replace(searchParams.get('next') || '/');
-    else setError('Staff ID or password is incorrect. API offline? Demo: ECHO-STF-001 / EchoFlow!demo');
+    setError('');
+    if (accountId.trim().toUpperCase().startsWith('ECHO-ADM-') !== admin) {
+      setError(admin ? 'Enter your administrator ID, or switch to Staff.' : 'Switch to Admin to sign in with an administrator ID.');
+      return;
+    }
+    setBusy(true);
+    try {
+      const signedInRole = await signIn(accountId, password, keep, admin ? code : undefined);
+      router.replace(destinationFor(signedInRole, searchParams.get('next')));
+      router.refresh();
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Unable to sign in. Please try again.');
+    } finally { setBusy(false); }
   };
 
   return (
-    <main className="staff-auth-page">
+    <main className="staff-auth-page" data-login-role={loginRole}>
       <BrandPanel />
       <section className="staff-auth-side">
         <div className="staff-auth-content">
-          <div className="staff-auth-mobile-brand"><span className="staff-auth-brand-mark"><Activity size={19} /></span><b>EchoFlow Staff</b></div>
-          <p className="staff-eyebrow">Secure staff access</p>
+          <div className="staff-auth-mobile-brand"><span className="staff-auth-brand-mark"><Activity size={19} /></span><b>EchoFlow</b></div>
+          <p className="staff-eyebrow">Secure staff & admin access</p>
           <h2 className="staff-auth-title">Welcome back</h2>
-          <p className="staff-auth-description">Sign in to manage today&apos;s ECHO unit queue.</p>
+          <p className="staff-auth-description">Sign in with your hospital staff or administrator account.</p>
+          <div className="staff-auth-role-tabs" role="tablist" aria-label="Account type">
+            <button id="login-tab-staff" type="button" role="tab" aria-label="Staff" aria-selected={!admin} aria-controls="login-panel" tabIndex={admin ? -1 : 0} disabled={busy} onClick={() => selectRole('staff')} onKeyDown={handleRoleKey}><Users size={15} aria-hidden="true" /><span>Staff</span></button>
+            <button id="login-tab-admin" type="button" role="tab" aria-label="Admin" aria-selected={admin} aria-controls="login-panel" tabIndex={admin ? 0 : -1} disabled={busy} onClick={() => selectRole('admin')} onKeyDown={handleRoleKey}><ShieldCheck size={15} aria-hidden="true" /><span>Admin</span></button>
+          </div>
+          <div id="login-panel" className="staff-auth-role-panel" role="tabpanel" aria-labelledby={`login-tab-${loginRole}`}>
           <form className="staff-auth-form" onSubmit={submit}>
-            <Field label="Staff ID" value={staffId} onChange={(e) => setStaffId(e.target.value)} placeholder="ECHO-STF-001" autoComplete="username" />
+            <Field label={admin ? 'Admin ID' : 'Staff ID'} value={accountId} onChange={(e) => admin ? setAdminId(e.target.value) : setStaffId(e.target.value)} placeholder={admin ? 'ECHO-ADM-014' : 'ECHO-STF-001'} autoComplete="username" required />
             <label className="staff-field"><span className="staff-field-label">Password</span><span className="staff-password-wrap"><input className="staff-input" type={show ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" /><button type="button" onClick={() => setShow(!show)} className="staff-password-toggle" aria-label={show ? 'Hide password' : 'Show password'}>{show ? <EyeOff size={17} /> : <Eye size={17} />}</button></span></label>
+            {admin && <Field label="Two-factor access code" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} inputMode="numeric" autoComplete="one-time-code" maxLength={6} required placeholder="6-digit code" />}
             <div className="staff-auth-options"><label><input type="checkbox" checked={keep} onChange={(e) => setKeep(e.target.checked)} />Keep me signed in</label><Link href="/forgot-password">Forgot password?</Link></div>
             {error && <p className="staff-auth-error">{error}</p>}
-            <Button className="w-full" type="submit">Sign in securely</Button>
+            <Button className="w-full" type="submit" disabled={busy}>{busy ? 'Signing in...' : 'Sign in securely'}</Button>
           </form>
+          </div>
           <div className="staff-auth-divider"><span />OR<span /></div>
           <Button variant="secondary" className="w-full" onClick={() => setSso('Hospital SSO is not configured for this demonstration.')}>Sign in with hospital SSO</Button>
           {sso && <p className="staff-auth-support">{sso}</p>}
-          <p className="staff-auth-demo">Demo: ECHO-STF-001 · EchoFlow!demo</p>
+          <p className="staff-auth-demo">Demo: {admin ? 'ECHO-ADM-014' : 'ECHO-STF-001'} / EchoFlow!demo{admin && <><br />Access code: 123456</>}</p>
         </div>
       </section>
     </main>
@@ -85,7 +127,7 @@ export function ForgotPasswordScreen() {
       <BrandPanel />
       <section className="staff-auth-side">
         <div className="staff-auth-content">
-          <div className="staff-auth-mobile-brand"><span className="staff-auth-brand-mark"><Activity size={19} /></span><b>EchoFlow Staff</b></div>
+          <div className="staff-auth-mobile-brand"><span className="staff-auth-brand-mark"><Activity size={19} /></span><b>EchoFlow</b></div>
           <Link href="/login" className="staff-auth-back"><ArrowLeft size={15} />Back to sign in</Link>
           {sent ? <div><span className="staff-auth-success-icon"><CheckCircle2 size={25} /></span><h1 className="staff-auth-title">Check your verified email</h1><p className="staff-auth-description">If the Staff ID exists, a secure reset link has been sent to the verified email address on file.</p><Button className="staff-auth-spaced-button w-full" onClick={() => setSent(false)}>Send again</Button></div> :
           <><p className="staff-eyebrow">Account recovery</p><h1 className="staff-auth-title">Reset your password</h1><p className="staff-auth-description">Enter your Staff ID. Reset instructions are only sent to your verified hospital email.</p><div className="staff-auth-recovery-form"><Field label="Staff ID" defaultValue="ECHO-STF-001" /><div className="staff-auth-notice"><Clock3 size={17} /><p>The reset link is single-use and expires after <strong>15 minutes</strong>.</p></div><Button className="w-full" onClick={() => setSent(true)}>Send reset link</Button></div></>}
@@ -103,7 +145,7 @@ export function ResetPasswordScreen() {
       <BrandPanel />
       <section className="staff-auth-side">
         <form className="staff-auth-content" onSubmit={(event) => { event.preventDefault(); setDone(true); }}>
-          <div className="staff-auth-mobile-brand"><span className="staff-auth-brand-mark"><Activity size={19} /></span><b>EchoFlow Staff</b></div>
+          <div className="staff-auth-mobile-brand"><span className="staff-auth-brand-mark"><Activity size={19} /></span><b>EchoFlow</b></div>
           <p className="staff-eyebrow">Secure reset</p>
           <h1 className="staff-auth-title">{done ? 'Password updated' : 'Create a new password'}</h1>
           {done ? <><p className="staff-auth-description">Your password has been updated. You can now return to the staff sign-in page.</p><Link href="/login" className="staff-auth-return">Return to sign in</Link></> :
