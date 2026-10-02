@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { Activity, ArrowRight, BrainCircuit, Clock3, Download, Gauge, Lightbulb, Sparkles, TrendingDown, TrendingUp, UserCheck, Users } from 'lucide-react';
-import { Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Activity, ArrowRight, BrainCircuit, Clock3, Download, Gauge, Lightbulb, Sparkles, TrendingUp, UserCheck, Users } from 'lucide-react';
+import { Bar, BarChart, CartesianGrid, Cell, LabelList, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { forecast, inflow, weekly } from '@/lib/demo-data';
 import { Badge, Button, Card, MetricCard, PageHeader } from './ui';
 
@@ -46,6 +46,10 @@ export function PredictionScreen() {
 }
 
 export function ReportsScreen() {
+  const totalPatients = weekly.reduce((total, item) => total + item.patients, 0);
+  const averagePerDay = weekly.reduce((total, item) => total + item.patients, 0) / weekly.length;
+  const busiestDay = weekly.reduce((busiest, item) => item.patients > busiest.patients ? item : busiest);
+  const weeklyChartData = weekly.map((item) => ({ ...item, average: averagePerDay }));
   const exportCsv = () => {
     const csv = `Day,Patients served\n${weekly.map((item) => `${item.day},${item.patients}`).join('\n')}`;
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
@@ -53,10 +57,90 @@ export function ReportsScreen() {
   };
   return (
     <>
-      <PageHeader eyebrow="Operational analytics" title="Reports" description="Track unit performance and export ready-to-share operational summaries." actions={<select aria-label="Report period" className="h-10 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold"><option>This week</option><option disabled>Last week (unavailable)</option><option disabled>This month (unavailable)</option></select>} />
-      <Card className="mb-5 border-teal-200 bg-teal-50 p-5"><div className="flex gap-4"><Sparkles className="h-6 w-6 shrink-0 text-teal-700" /><div><p className="text-xs font-bold uppercase tracking-[.15em] text-teal-700">AI Summary</p><p className="mt-1 font-bold">Patient volume is up 12% from last week, led by Wednesday’s referral demand.</p><p className="mt-1 text-sm text-slate-600">Despite higher volume, average wait improved by 4 minutes.</p></div></div></Card>
-      <div className="grid gap-4 md:grid-cols-3"><MetricCard label="Total patients" value="243" note="+12% week on week" icon={Users} /><MetricCard label="Average wait time" value="23 min" note="4 min improvement" icon={TrendingDown} tone="cyan" /><MetricCard label="Prediction accuracy" value="93.7%" note="Live operational model" icon={Activity} tone="amber" /></div>
-      <Card className="mt-5 p-6"><div className="flex flex-wrap justify-between gap-3"><div><h2 className="font-bold">Patients served per day</h2><p className="mt-1 text-xs text-slate-500">Monday to Friday · average 48.6 patients</p></div><div className="flex gap-2"><Button variant="secondary" onClick={exportCsv}><Download className="h-4 w-4" />Export CSV</Button><Button onClick={() => window.print()}><Download className="h-4 w-4" />Export report PDF</Button></div></div><div className="mt-6 h-[340px]"><ResponsiveContainer width="100%" height="100%"><BarChart data={weekly}><CartesianGrid vertical={false} strokeDasharray="4 4" stroke="#e2e8f0" /><XAxis dataKey="day" axisLine={false} tickLine={false} /><YAxis axisLine={false} tickLine={false} /><Tooltip contentStyle={{ borderRadius: 8 }} /><ReferenceLine y={48.6} stroke="#64748b" strokeDasharray="5 5" label={{ value: 'Average', fill: '#64748b', fontSize: 11 }} /><Bar dataKey="patients" radius={[5, 5, 0, 0]}>{weekly.map((item) => <Cell key={item.day} fill={item.day === 'Wed' ? '#13558f' : '#91d6e5'} />)}</Bar></BarChart></ResponsiveContainer></div></Card>
+      <PageHeader
+        eyebrow="Operational analytics"
+        title="Reports"
+        description="Track unit performance and export ready-to-share operational summaries."
+        actions={(
+          <div className="flex flex-wrap items-center gap-2">
+            <select aria-label="Report period" className="h-10 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold">
+              <option>This week</option><option disabled>Last week (unavailable)</option><option disabled>This month (unavailable)</option>
+            </select>
+            <Button variant="secondary" onClick={exportCsv}><Download className="h-4 w-4" />Export CSV</Button>
+            <Button onClick={() => window.print()}><Download className="h-4 w-4" />Export PDF</Button>
+          </div>
+        )}
+      />
+      <Card className="mb-5 overflow-hidden border-teal-200 bg-gradient-to-r from-teal-50 via-white to-cyan-50 p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-teal-700 text-white shadow-sm shadow-teal-900/15"><Sparkles className="h-5 w-5" /></span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-teal-700">Weekly performance summary</p>
+            <h2 className="mt-1 text-base font-bold text-slate-900">Patient volume is up 12% from last week, led by Wednesday’s referral demand.</h2>
+            <p className="mt-1 text-sm leading-5 text-slate-600">Average wait improved by 4 minutes, with {busiestDay.day} recording the highest daily volume.</p>
+          </div>
+          <Badge tone="cyan"><Activity className="h-3 w-3" />This week</Badge>
+        </div>
+      </Card>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {[
+          { label: 'Patients served', value: String(totalPatients), note: '+12% week on week', icon: Users, tone: 'text-sky-700 bg-sky-50' },
+          { label: 'Busiest day', value: busiestDay.day, note: `${busiestDay.patients} patients served`, icon: TrendingUp, tone: 'text-teal-700 bg-teal-50' },
+          { label: 'Average wait time', value: '23 min', note: '4 min improvement', icon: Clock3, tone: 'text-amber-700 bg-amber-50' },
+          { label: 'Prediction accuracy', value: '93.7%', note: 'Operational model', icon: Activity, tone: 'text-cyan-700 bg-cyan-50' },
+        ].map(({ label, value, note, icon: Icon, tone }) => (
+          <Card className="p-4 sm:p-5" key={label}>
+            <span className={`grid h-9 w-9 place-items-center rounded-xl ${tone}`}><Icon className="h-[18px] w-[18px]" /></span>
+            <p className="mt-3 text-2xl font-bold tracking-tight text-slate-900">{value}</p>
+            <p className="mt-1 text-sm font-semibold text-slate-800">{label}</p>
+            <p className="mt-0.5 text-xs text-slate-500">{note}</p>
+          </Card>
+        ))}
+      </div>
+      <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(270px,.8fr)]">
+        <Card className="overflow-hidden">
+          <div className="border-b border-slate-100 px-5 py-4">
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-teal-700">Weekly activity</p>
+            <div className="mt-1 flex flex-wrap items-end justify-between gap-2">
+              <div><h2 className="font-bold text-slate-900">Patients served per day</h2><p className="mt-1 text-xs text-slate-500">Completed visits · Monday to Friday</p></div>
+              <span className="rounded-lg bg-teal-50 px-3 py-1.5 text-xs font-semibold text-teal-800">Average {averagePerDay.toFixed(1)} / day</span>
+            </div>
+          </div>
+          <div className="h-[240px] px-3 py-4 sm:h-[270px] sm:px-5">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={weeklyChartData} margin={{ top: 18, right: 8, bottom: 0, left: -14 }} barCategoryGap="14%" barGap={5}>
+                <defs>
+                  <linearGradient id="reportDailyBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#a5e4e9" /><stop offset="100%" stopColor="#65bdca" /></linearGradient>
+                  <linearGradient id="reportPeakBar" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#21b7b0" /><stop offset="100%" stopColor="#087f8c" /></linearGradient>
+                </defs>
+                <CartesianGrid vertical={false} strokeDasharray="3 6" stroke="#e8eef3" />
+                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }} tickMargin={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 11 }} width={34} />
+                <Tooltip cursor={{ fill: '#f1f7f8' }} contentStyle={{ borderRadius: 10, borderColor: '#e2e8f0', boxShadow: '0 8px 24px rgba(15, 23, 42, 0.08)' }} formatter={(value, name) => [`${Number(value).toFixed(name === 'Weekly average' ? 1 : 0)} patients`, name]} labelFormatter={(label) => `${label} · daily total`} />
+                <Legend align="right" verticalAlign="top" height={26} iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 11, color: '#64748b' }} />
+                <Bar dataKey="patients" name="Patients served" radius={[7, 7, 2, 2]} maxBarSize={82}>
+                  {weekly.map((item) => <Cell key={item.day} fill={item.day === busiestDay.day ? 'url(#reportPeakBar)' : 'url(#reportDailyBar)'} />)}
+                  <LabelList dataKey="patients" position="top" offset={8} fill="#475569" fontSize={11} fontWeight={700} />
+                </Bar>
+                <Bar dataKey="average" name="Weekly average" fill="#d6e3e9" radius={[7, 7, 2, 2]} maxBarSize={82} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+        <Card className="overflow-hidden">
+          <div className="border-b border-slate-100 px-5 py-4"><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-teal-700">This week</p><h2 className="mt-1 font-bold text-slate-900">Unit report</h2><p className="mt-1 text-xs text-slate-500">Weekly performance at a glance</p></div>
+          <div className="divide-y divide-slate-100 px-5">
+            {[
+              ['Patients served', String(totalPatients)],
+              ['Reporting days', String(weekly.length)],
+              ['Daily average', averagePerDay.toFixed(1)],
+              ['Busiest day', `${busiestDay.day} · ${busiestDay.patients}`],
+              ['Average wait', '23 min'],
+            ].map(([label, value]) => <div className="flex items-center justify-between gap-3 py-3.5 text-sm" key={label}><span className="text-slate-500">{label}</span><b className="text-right font-semibold text-slate-800">{value}</b></div>)}
+          </div>
+          <div className="mx-5 mb-5 rounded-lg bg-teal-50 px-3.5 py-3"><p className="text-xs font-semibold text-teal-900">{busiestDay.day} was the busiest day</p><p className="mt-0.5 text-xs text-teal-800/80">{busiestDay.patients} patients were served.</p></div>
+        </Card>
+      </div>
     </>
   );
 }
